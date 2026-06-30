@@ -2,16 +2,15 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { ChevronLeft, Send } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
-import { useUI } from "@/lib/ui";
 import { getSeedConversations } from "@/content/chat";
 import { formatTime, initials } from "@/lib/utils";
 import type { Conversation } from "@/lib/types";
 
-export default function AdminPanel() {
+export default function AdminPanel({ onLogout }: { onLogout: () => void }) {
   const { locale, t } = useLocale();
-  const { adminOpen, closeAdmin } = useUI();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [mobileConv, setMobileConv] = useState(false);
@@ -19,13 +18,11 @@ export default function AdminPanel() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const nextId = useRef(1);
 
-  // Seed the inbox when first opened (mock data; localized greeting).
+  // Seed the inbox once on mount (mock data; localized greeting).
   useEffect(() => {
-    if (adminOpen && conversations.length === 0) {
-      setConversations(getSeedConversations(locale));
-    }
+    setConversations(getSeedConversations(locale));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [adminOpen]);
+  }, []);
 
   const sorted = useMemo(
     () => [...conversations].sort((a, b) => b.ts - a.ts),
@@ -36,8 +33,6 @@ export default function AdminPanel() {
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
   }, [active?.messages.length, activeId]);
-
-  if (!adminOpen) return null;
 
   const reply = () => {
     const text = draft.trim();
@@ -61,7 +56,7 @@ export default function AdminPanel() {
   };
 
   return (
-    <div className="fixed inset-0 z-[80] flex flex-col" style={{ background: "#0a0510" }}>
+    <div className="flex min-h-dvh flex-col" style={{ background: "#0a0510" }}>
       {/* top bar */}
       <div
         className="flex items-center justify-between gap-4 px-[clamp(16px,3vw,28px)] py-4"
@@ -88,13 +83,22 @@ export default function AdminPanel() {
             </div>
           </div>
         </div>
-        <button
-          onClick={closeAdmin}
-          className="inline-flex cursor-pointer items-center gap-2 rounded-full px-5 py-[11px] text-[14px] text-gold-200"
-          style={{ border: "1px solid rgba(231,178,76,.4)", background: "rgba(231,178,76,.06)" }}
-        >
-          ← {t.admin.back}
-        </button>
+        <div className="flex items-center gap-2.5">
+          <Link
+            href="/"
+            className="inline-flex cursor-pointer items-center gap-2 rounded-full px-5 py-[11px] text-[14px] text-gold-200 no-underline"
+            style={{ border: "1px solid rgba(231,178,76,.4)", background: "rgba(231,178,76,.06)" }}
+          >
+            ← {t.admin.back}
+          </Link>
+          <button
+            onClick={onLogout}
+            className="inline-flex cursor-pointer items-center gap-2 rounded-full px-5 py-[11px] text-[14px] text-sand"
+            style={{ border: "1px solid rgba(231,178,76,.2)", background: "transparent" }}
+          >
+            {t.admin.logout}
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-1 overflow-hidden">

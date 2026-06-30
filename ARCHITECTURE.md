@@ -141,6 +141,11 @@ untouched. No real persistence is in scope for this repo.
 
 Append one line per non-obvious decision. Newest at top.
 
+- **Admin moved to its own `/admin` route, behind a temporary client-side login**
+  (`lib/auth.ts`). Static/no-backend means any client check is deterrence, not
+  security — so `login()` is the documented swap point for real backend auth, and
+  `/admin` is the natural path to protect at the host (Vercel/Netlify/Cloudflare
+  Access). The public footer no longer links to it; the route is `noindex`.
 - **i18n via client-side React context, not next-intl URL routing** — static
   export (`output: 'export'`) cannot run next-intl's locale middleware, and the
   prototype switched language instantly client-side. Copy still lives as typed

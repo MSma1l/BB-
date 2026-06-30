@@ -218,6 +218,12 @@ export const ru: Dictionary = {
     replyPh: "Ответить клиенту…",
     back: "На сайт",
     guest: "Гость",
+    loginTitle: "Вход в панель администратора",
+    userPh: "Логин",
+    passPh: "Пароль",
+    signIn: "Войти",
+    loginError: "Неверный логин или пароль",
+    logout: "Выйти",
   },
   introSkip: "Пропустить",
 };

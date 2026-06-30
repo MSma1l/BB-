@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Phone, MessageCircle, Mail, MapPin, Lock } from "lucide-react";
+import { Phone, MessageCircle, Mail, MapPin } from "lucide-react";
 import { useT } from "@/lib/i18n";
 import { useUI } from "@/lib/ui";
 
@@ -10,7 +10,7 @@ const PHONE = "+37360000000";
 export default function Footer() {
   const t = useT();
   const f = t.footer;
-  const { openChat, openAdmin } = useUI();
+  const { openChat } = useUI();
 
   return (
     <footer
@@ -85,12 +85,6 @@ export default function Footer() {
           <span>
             © 2026 {f.brandLine}. {f.rights}.
           </span>
-          <button
-            onClick={openAdmin}
-            className="inline-flex cursor-pointer items-center gap-[5px] border-none bg-transparent text-[12px] text-dim transition-colors hover:text-gold-600"
-          >
-            <Lock size={12} /> {f.admin}
-          </button>
         </div>
       </div>
     </footer>

@@ -11,7 +11,6 @@ import Process from "@/components/sections/Process";
 import Why from "@/components/sections/Why";
 import Reviews from "@/components/sections/Reviews";
 import ChatWidget from "@/components/chat/ChatWidget";
-import AdminPanel from "@/components/chat/AdminPanel";
 
 export default function Home() {
   return (
@@ -37,9 +36,8 @@ export default function Home() {
         <Footer />
       </div>
 
-      {/* Floating + overlay UI (read open-state from the UI context) */}
+      {/* Floating chat widget (reads open-state from the UI context) */}
       <ChatWidget />
-      <AdminPanel />
     </div>
   );
 }

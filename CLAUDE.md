@@ -104,6 +104,11 @@ is kept at the repo root for visual reference.
   photos, so it was removed. Real event photos still need to be supplied, dropped
   into `frontend/public/uploads/`, and wired into `content/gallery.ts`.
 - Chat/admin had no real persistence — mock React state only (localStorage in the prototype).
+- Admin lives at its own route **`/admin`** behind a **temporary client-side login**
+  (`frontend/lib/auth.ts`, default `admin` / `bbreeze-admin`). This is deterrence,
+  not real security — credentials ship in the bundle. The footer no longer links
+  to it. **Backend swap:** replace `login()` in `lib/auth.ts` with a real auth API
+  (and/or protect `/admin` at the host with Vercel/Netlify/Cloudflare Access).
 
 ---
 

@@ -226,6 +226,12 @@ export const ro: Dictionary = {
     replyPh: "Răspunde clientului…",
     back: "Înapoi la site",
     guest: "Vizitator",
+    loginTitle: "Autentificare administrator",
+    userPh: "Utilizator",
+    passPh: "Parolă",
+    signIn: "Conectare",
+    loginError: "Utilizator sau parolă incorecte",
+    logout: "Deconectare",
   },
   introSkip: "Sări peste",
 };

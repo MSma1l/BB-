@@ -216,6 +216,12 @@ export const en: Dictionary = {
     replyPh: "Reply to client…",
     back: "Back to site",
     guest: "Guest",
+    loginTitle: "Admin panel sign-in",
+    userPh: "Username",
+    passPh: "Password",
+    signIn: "Sign in",
+    loginError: "Incorrect username or password",
+    logout: "Log out",
   },
   introSkip: "Skip",
 };

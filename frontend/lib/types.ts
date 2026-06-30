@@ -182,6 +182,13 @@ export interface Dictionary {
     replyPh: string;
     back: string;
     guest: string;
+    /** Login gate. */
+    loginTitle: string;
+    userPh: string;
+    passPh: string;
+    signIn: string;
+    loginError: string;
+    logout: string;
   };
   /** Intro preloader "skip" label. */
   introSkip: string;
