@@ -2,6 +2,13 @@
 
 import { useT } from "@/lib/i18n";
 import Reveal from "@/components/ui/Reveal";
+import Carousel from "@/components/ui/Carousel";
+
+const PROFILE_PHOTOS = [
+  "/photos/profile1.jpg",
+  "/photos/profile2.jpg",
+  "/photos/profile3.jpg",
+];
 
 export default function About() {
   const t = useT();
@@ -94,12 +101,12 @@ export default function About() {
                   boxShadow: "0 30px 70px rgba(0,0,0,.55)",
                 }}
               >
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-[14px]">
-                  <span className="text-[46px] opacity-50">👤</span>
-                  <span className="font-body text-[12px] tracking-[0.16em] text-muted">
-                    {a.imgA}
-                  </span>
-                </div>
+                <Carousel
+                  images={PROFILE_PHOTOS}
+                  alt={a.name}
+                  sizes="(max-width:880px) 100vw, 40vw"
+                  priority
+                />
               </div>
               {/* quote card */}
               <div

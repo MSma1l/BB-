@@ -46,9 +46,11 @@ npm run build      # static export → frontend/out/
 
 ## ▶️ Remaining / next steps
 
-1. **Real media** — replace the gallery's CSS-pattern placeholders with the
-   photos in `frontend/public/uploads/` (TODO in `ARCHITECTURE.md §8`).
-2. **Real contact details** — phone/email/Instagram are still placeholders
+1. **Real media** — the About section (profile carousel) and the Showcase strip
+   (wedding/Toronto carousel) now use real photos in `frontend/public/photos/`.
+   The **gallery grid** tiles are still CSS-pattern placeholders awaiting real
+   event photos (TODO in `ARCHITECTURE.md §8`).
+2. **Real contact details** — phone/email are still placeholders
    (search `+37360000000`, `hello@balloonsbreeze.md`).
 3. **Backend handoff** — the only swap points are the async accessors in
    `frontend/content/*` (tagged `// BACKEND:`); see `ARCHITECTURE.md §3`.
@@ -95,7 +97,8 @@ is kept at the repo root for visual reference.
 ## ⚠️ Known placeholders (not real yet)
 
 - Contact details are fake: phone `+37360000000`, email `hello@balloonsbreeze.md`, Instagram link.
-- Gallery + About images are CSS-pattern placeholders with emoji icons.
+- The **gallery grid** tiles are still CSS-pattern placeholders with emoji icons
+  (About + Showcase now use real photos from `frontend/public/photos/`).
   **There is no real gallery media yet** — the old `uploads/` folder turned out to
   be byte-identical copies of the brand logo/background/intro, not client event
   photos, so it was removed. Real event photos still need to be supplied, dropped

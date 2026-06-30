@@ -2,6 +2,17 @@
 
 import { useT } from "@/lib/i18n";
 import Reveal from "@/components/ui/Reveal";
+import Carousel from "@/components/ui/Carousel";
+
+const SHOWCASE_PHOTOS = [
+  "/photos/wedding1.jpg",
+  "/photos/wedding2.jpg",
+  "/photos/wedding3.jpg",
+  "/photos/wedding4.jpg",
+  "/photos/wedding5.jpg",
+  "/photos/torronto1.jpg",
+  "/photos/torronto2.jpg",
+];
 
 /** Wide image strip between About and Services (2nd placeholder zone). */
 export default function Showcase() {
@@ -24,19 +35,11 @@ export default function Showcase() {
               boxShadow: "0 30px 80px rgba(0,0,0,.5)",
             }}
           >
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "radial-gradient(circle at 50% 50%,color-mix(in srgb,var(--bb-accent) 22%,transparent),transparent 70%)",
-              }}
+            <Carousel
+              images={SHOWCASE_PHOTOS}
+              alt={t.about.imgB}
+              sizes="(max-width:1480px) 88vw, 1480px"
             />
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-              <span className="text-[40px] opacity-50">🎈</span>
-              <span className="font-body text-[12px] tracking-[0.18em] text-muted">
-                {t.about.imgB}
-              </span>
-            </div>
           </div>
         </Reveal>
       </div>
