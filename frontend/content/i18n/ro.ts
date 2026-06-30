@@ -1,0 +1,225 @@
+import type { Dictionary } from "@/lib/types";
+
+// Romanian. Ported from the DC prototype `T.ro`.
+export const ro: Dictionary = {
+  nav: {
+    about: "Despre noi",
+    services: "Servicii",
+    gallery: "Galerie",
+    process: "Cum lucrăm",
+    why: "De ce noi",
+    reviews: "Recenzii",
+  },
+  hero: {
+    titleA: "Sute de detalii.",
+    titleB: "Un singur scop.",
+    tagline: "Să creăm o atmosferă imposibil de uitat.",
+    sub: "Nunți · Zile de naștere · Decor evenimente · Evenimente business",
+    call: "Sună acum",
+    quote: "Primește o ofertă în 5 minute",
+    scroll: "Derulează",
+    hint: "Apasă pentru a elibera baloane",
+  },
+  about: {
+    kicker: "Despre noi",
+    title: "De la experiența de familie la propriul brand",
+    name: "Alexandr Oganov",
+    role: "Fondator · Corporation Balloons Breeze",
+    bio: "Copilăria mea s-a petrecut printre nunți, sărbători și decor. Am crescut într-o familie de organizatori de evenimente, iar această experiență a devenit baza propriului meu drum. După ce mi-am creat brandul la Toronto, astăzi deschid un nou capitol al poveștii lui în Moldova.",
+    points: [
+      "Experiență în domeniul evenimentelor",
+      "Abordare internațională",
+      "Lucru individual cu fiecare client",
+      "Focus pe calitate, emoții și detalii",
+    ],
+    badges: [
+      "🇨🇦 Experiență în Canada",
+      "🇲🇩 Lucrăm în Moldova",
+      "Specializare pe nunți",
+      "Zile de naștere",
+    ],
+    imgA: "FOTO · Alexandr Oganov",
+    imgB: "FOTO · proiect realizat",
+    quote:
+      "Un brand construit pe dragostea pentru detalii, emoții și evenimente de neuitat.",
+  },
+  services: {
+    kicker: "Serviciile noastre",
+    title: "De la elemente separate — la evenimentul la cheie",
+    intro: "Nu creăm doar decor — te ajutăm să dai viață unui eveniment întreg.",
+    wedding: {
+      title: "Nunți",
+      desc: "Nu creăm doar decor de nuntă — te ajutăm să dai viață întregului eveniment.",
+      note: "Putem organiza atât elemente separate ale nunții, cât și evenimentul la cheie.",
+      groups: [
+        {
+          title: "Decor și amenajare",
+          items: [
+            "Arcade din baloane",
+            "Aranjamente florale",
+            "Amenajarea sălii",
+            "Foto-zone",
+            "Zone de welcome",
+            "Decorarea meselor",
+            "Instalații de nuntă",
+            "Decorul ceremoniei",
+          ],
+        },
+        {
+          title: "Foto și video",
+          items: ["Fotografi", "Videografi", "Filmare aeriană (dronă)"],
+        },
+        {
+          title: "Program de divertisment",
+          items: [
+            "Prezentator",
+            "DJ",
+            "Muzică live",
+            "Programe de show",
+            "Animatori",
+          ],
+        },
+        {
+          title: "Pregătire",
+          items: ["Make-up artiști", "Styliști", "Coordonatori de nuntă"],
+        },
+        {
+          title: "Organizare",
+          items: [
+            "Transfer",
+            "Închiriere auto",
+            "Alegerea locației",
+            "Coordonarea evenimentului",
+            "Întocmirea timingului",
+          ],
+        },
+        {
+          title: "Servicii suplimentare",
+          items: [
+            "Tort de nuntă",
+            "Catering",
+            "Iluminat decorativ",
+            "Artificii",
+            "Elemente de decor personalizate",
+          ],
+        },
+      ],
+    },
+    others: [
+      {
+        title: "🎂 Zile de naștere",
+        items: ["Pentru copii", "Pentru adulți", "Aniversări"],
+      },
+      { title: "🎉 Evenimente private", items: ["Petreceri"] },
+      {
+        title: "🏢 Evenimente corporate",
+        items: ["Deschideri", "Prezentări", "Evenimente de business"],
+      },
+    ],
+  },
+  gallery: {
+    kicker: "Galerie de lucrări",
+    title: "Fiecare detaliu — parte din poveste",
+    cats: {
+      all: "Toate",
+      weddings: "Nunți",
+      birthdays: "Zile de naștere",
+      photozones: "Foto-zone",
+      arches: "Arcade",
+      corporate: "Corporate",
+    },
+  },
+  process: {
+    kicker: "Cum lucrăm",
+    title: "Cinci pași până la evenimentul perfect",
+    steps: [
+      "Lași o solicitare",
+      "Creăm conceptul",
+      "Stabilim bugetul",
+      "Realizăm proiectul",
+      "Te bucuri de eveniment",
+    ],
+  },
+  why: {
+    kicker: "De ce ne aleg",
+    title: "Avantaje pe care le simți în detalii",
+    items: [
+      "Abordare individuală",
+      "Termene rapide",
+      "Materiale premium",
+      "Design modern",
+      "Experiență internațională",
+      "Transparență totală",
+    ],
+  },
+  reviews: {
+    kicker: "Recenziile clienților",
+    title: "Emoții care rămân",
+    list: [
+      {
+        name: "Elena și Andrei",
+        role: "Nuntă, Chișinău",
+        rating: 5,
+        text: "Nunta noastră s-a transformat într-o poveste. Arcada din baloane și flori a fost o adevărată operă de artă. Mulțumim pentru grija la fiecare detaliu!",
+      },
+      {
+        name: "Marina Crudu",
+        role: "Aniversare",
+        rating: 5,
+        text: "Am comandat amenajarea pentru aniversarea mamei — invitații au fost încântați. Totul cu stil, scump și cu gust.",
+      },
+      {
+        name: "Victoria P.",
+        role: "Nuntă",
+        rating: 5,
+        text: "Alex și echipa simt atmosfera din jumătate de cuvânt. A ieșit chiar mai bine decât am visat.",
+      },
+      {
+        name: "Sergiu și Ana",
+        role: "Deschidere showroom",
+        rating: 5,
+        text: "Au organizat deschiderea showroom-ului nostru la cheie. Profesionist, exact la timp, fără întrebări în plus.",
+      },
+      {
+        name: "Daria Kovalciuc",
+        role: "Foto-zonă",
+        rating: 5,
+        text: "Foto-zona a fost vedeta serii — toate pozele au ieșit magice.",
+      },
+      {
+        name: "Cristina T.",
+        role: "Nuntă",
+        rating: 4.5,
+        text: "Materiale premium, design modern și transparență totală. Recomand din toată inima.",
+      },
+    ],
+  },
+  footer: {
+    kicker: "Contactează-ne",
+    title: "Spune-ne despre evenimentul tău — de rest ne ocupăm noi",
+    phone: "+373 60 000 000",
+    email: "hello@balloonsbreeze.md",
+    cityLabel: "Moldova · Chișinău",
+    rights: "Toate drepturile rezervate",
+    admin: "Admin",
+    brandLine: "Corporation Balloons Breeze",
+  },
+  chat: {
+    title: "Balloons Breeze",
+    online: "online",
+    greeting:
+      "Bună ziua! 👋 Mulțumim că ai trecut pe la Balloons Breeze. Spune-ne ce eveniment plănuiești — și te ajutăm să găsim soluția perfectă.",
+    placeholder: "Scrie un mesaj…",
+    hint: "De obicei răspundem în câteva minute",
+  },
+  admin: {
+    title: "Panou administrator",
+    subtitle: "Conversații cu clienți",
+    empty: "Selectează o conversație pentru a răspunde",
+    emptyList: "Nu există conversații încă",
+    replyPh: "Răspunde clientului…",
+    back: "Înapoi la site",
+    guest: "Vizitator",
+  },
+  introSkip: "Sări peste",
+};

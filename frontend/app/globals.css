@@ -1,0 +1,181 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Design tokens — Balloons Breeze
+   Palette + accent themes ported from the DC prototype.
+   Accent vars are mutated at runtime by the AccentProvider.
+   ============================================================ */
+:root {
+  --bb-bg: #08040a;
+  --bb-text: #f1e7d6;
+
+  /* Accent (default: crimson). Swapped live via the `accent` theme. */
+  --bb-accent: #b3243a;
+  --bb-accent-deep: #5a0f1c;
+
+  /* Gold scale — the brand's signature metallic range */
+  --bb-gold-100: #fbe7a8;
+  --bb-gold-200: #f0dca8;
+  --bb-gold-300: #eccb82;
+  --bb-gold-400: #e7b24c;
+  --bb-gold-500: #e0b462;
+  --bb-gold-600: #c79a4e;
+  --bb-gold-700: #bd8a2e;
+
+  /* Warm neutrals for body copy / muted labels */
+  --bb-cream: #f1e7d6;
+  --bb-sand: #cdbfa6;
+  --bb-sand-deep: #bdae92;
+  --bb-muted: #9c8a6e;
+  --bb-dim: #6f6452;
+}
+
+@theme inline {
+  --color-bg: var(--bb-bg);
+  --color-text: var(--bb-text);
+  --color-accent: var(--bb-accent);
+  --color-accent-deep: var(--bb-accent-deep);
+
+  --color-gold-100: var(--bb-gold-100);
+  --color-gold-200: var(--bb-gold-200);
+  --color-gold-300: var(--bb-gold-300);
+  --color-gold-400: var(--bb-gold-400);
+  --color-gold-500: var(--bb-gold-500);
+  --color-gold-600: var(--bb-gold-600);
+  --color-gold-700: var(--bb-gold-700);
+
+  --color-cream: var(--bb-cream);
+  --color-sand: var(--bb-sand);
+  --color-sand-deep: var(--bb-sand-deep);
+  --color-muted: var(--bb-muted);
+  --color-dim: var(--bb-dim);
+
+  /* Fonts wired up in app/layout.tsx via next/font */
+  --font-display: var(--font-cormorant);
+  --font-body: var(--font-jost);
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+* {
+  box-sizing: border-box;
+}
+html {
+  scroll-behavior: smooth;
+}
+body {
+  margin: 0;
+  background: var(--bb-bg);
+  color: var(--bb-text);
+  font-family: var(--font-jost), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+::selection {
+  background: var(--bb-gold-400);
+  color: #1a0a0e;
+}
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+::-webkit-scrollbar-track {
+  background: #0c060e;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(#7c4f12, #3a2208);
+  border-radius: 9px;
+}
+input,
+button,
+textarea {
+  font-family: inherit;
+}
+
+/* Shared helper: the gold gradient text used on hero/headings */
+.bb-gold-text {
+  background: linear-gradient(180deg, #fdeecb, #eab84f 46%, #b6822a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* The primary gold "call" button fill, reused across CTAs */
+.bb-gold-btn {
+  background: linear-gradient(180deg, #fbe7a8, #e7b24c 55%, #bd8a2e);
+  color: #2a1606;
+  box-shadow:
+    0 14px 36px rgba(231, 178, 76, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+/* ============================================================
+   Keyframes (ambient loops + entrances) — ported from prototype
+   ============================================================ */
+@keyframes bbRise {
+  from {
+    opacity: 0;
+    transform: translateY(34px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes bbBob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(9px);
+  }
+}
+@keyframes bbPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0 rgba(231, 178, 76, 0.45),
+      0 14px 34px rgba(0, 0, 0, 0.5);
+  }
+  50% {
+    box-shadow:
+      0 0 0 12px rgba(231, 178, 76, 0),
+      0 14px 34px rgba(0, 0, 0, 0.5);
+  }
+}
+@keyframes bbShine {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+@keyframes bbPop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+  }
+  70% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.14);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}

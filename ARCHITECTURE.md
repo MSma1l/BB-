@@ -141,6 +141,27 @@ untouched. No real persistence is in scope for this repo.
 
 Append one line per non-obvious decision. Newest at top.
 
+- **i18n via client-side React context, not next-intl URL routing** — static
+  export (`output: 'export'`) cannot run next-intl's locale middleware, and the
+  prototype switched language instantly client-side. Copy still lives as typed
+  tables in `content/i18n/`; `LocaleProvider` (`lib/i18n.tsx`) holds the active
+  locale, persists it to `localStorage`, and exposes `useLocale()`/`useT()`. The
+  default locale (RU) is pre-rendered into the static HTML, so SEO is preserved
+  for the primary language. Per-locale URLs can be layered on later if needed.
+- **Built on Next.js 16 + React 19 + Tailwind v4** — `create-next-app@latest`
+  moved past 15; built on current stable. Tailwind v4 tokens live in `@theme`
+  inside `globals.css` (no `tailwind.config.js`).
+- **Styling is a Tailwind + inline-style hybrid** — Tailwind utilities for layout
+  and design tokens; the prototype's tuned gradients/`clamp()`/exact brand hexes
+  are kept as inline `style` objects for visual fidelity (relaxes §5's
+  "Tailwind for everything").
+- **Locale-reactive content renders synchronously from the dictionary** (via
+  `useT()`) for SSR/SEO + instant switching; the async `content/*` accessors
+  remain the documented backend swap point (a real API would add a data layer,
+  e.g. TanStack Query, per README).
+- **Scroll reveals use Framer Motion (`components/ui/Reveal.tsx`)** instead of the
+  prototype's CSS `animation-timeline: view()` (Chromium-only) for cross-browser
+  support.
 - **Next.js (static export) over Vite** — public business landing page → SEO + pre-rendered
   HTML matter; Next.js lets the backend dev add API routes later without a framework change.
 - **React Three Fiber over raw Three.js** — the prototype manually managed

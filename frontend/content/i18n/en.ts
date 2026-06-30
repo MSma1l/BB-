@@ -1,0 +1,215 @@
+import type { Dictionary } from "@/lib/types";
+
+// English. Ported from the DC prototype `T.en`.
+export const en: Dictionary = {
+  nav: {
+    about: "About",
+    services: "Services",
+    gallery: "Gallery",
+    process: "Process",
+    why: "Why us",
+    reviews: "Reviews",
+  },
+  hero: {
+    titleA: "Hundreds of details.",
+    titleB: "One goal.",
+    tagline: "To create an atmosphere impossible to forget.",
+    sub: "Weddings · Birthdays · Event décor · Corporate styling",
+    call: "Call now",
+    quote: "Get a quote in 5 minutes",
+    scroll: "Scroll down",
+    hint: "Tap to release balloons",
+  },
+  about: {
+    kicker: "About us",
+    title: "From family heritage to our own brand",
+    name: "Alexandr Oganov",
+    role: "Founder · Corporation Balloons Breeze",
+    bio: "My childhood was spent among weddings, celebrations and décor. I grew up in a family of event organizers, and that experience became the foundation of my own path. Having built my brand in Toronto, today I open a new chapter of its story in Moldova.",
+    points: [
+      "Experience in the events industry",
+      "International approach",
+      "Individual work with every client",
+      "Focus on quality, emotion and detail",
+    ],
+    badges: [
+      "🇨🇦 Experience in Canada",
+      "🇲🇩 Working in Moldova",
+      "Wedding specialists",
+      "Birthdays",
+    ],
+    imgA: "PHOTO · Alexandr Oganov",
+    imgB: "PHOTO · completed project",
+    quote: "A brand built on a love for detail, emotion and unforgettable events.",
+  },
+  services: {
+    kicker: "Our services",
+    title: "From single elements — to a turnkey event",
+    intro: "We don't just create décor — we help bring an entire event to life.",
+    wedding: {
+      title: "Weddings",
+      desc: "We create more than wedding décor — we help bring the whole event to life.",
+      note: "We can arrange either individual wedding elements or the entire event turnkey.",
+      groups: [
+        {
+          title: "Décor & styling",
+          items: [
+            "Balloon arches",
+            "Floral arrangements",
+            "Hall styling",
+            "Photo zones",
+            "Welcome zones",
+            "Table decoration",
+            "Wedding installations",
+            "Ceremony décor",
+          ],
+        },
+        {
+          title: "Photo & video",
+          items: ["Photographers", "Videographers", "Aerial filming (drone)"],
+        },
+        {
+          title: "Entertainment",
+          items: ["Host", "DJ", "Live music", "Show programs", "Animators"],
+        },
+        {
+          title: "Preparation",
+          items: ["Makeup artists", "Stylists", "Wedding coordinators"],
+        },
+        {
+          title: "Organization",
+          items: [
+            "Transfer",
+            "Car rental",
+            "Venue selection",
+            "Event coordination",
+            "Timing planning",
+          ],
+        },
+        {
+          title: "Additional services",
+          items: [
+            "Wedding cake",
+            "Catering",
+            "Light design",
+            "Fireworks",
+            "Personalized décor elements",
+          ],
+        },
+      ],
+    },
+    others: [
+      { title: "🎂 Birthdays", items: ["Kids", "Adults", "Anniversaries"] },
+      { title: "🎉 Private events", items: ["Parties"] },
+      {
+        title: "🏢 Corporate events",
+        items: ["Openings", "Presentations", "Business events"],
+      },
+    ],
+  },
+  gallery: {
+    kicker: "Our work",
+    title: "Every detail — part of the story",
+    cats: {
+      all: "All",
+      weddings: "Weddings",
+      birthdays: "Birthdays",
+      photozones: "Photo zones",
+      arches: "Arches",
+      corporate: "Corporate",
+    },
+  },
+  process: {
+    kicker: "How we work",
+    title: "Five steps to the perfect event",
+    steps: [
+      "You leave a request",
+      "We create the concept",
+      "We agree on the budget",
+      "We bring it to life",
+      "You enjoy the event",
+    ],
+  },
+  why: {
+    kicker: "Why they choose us",
+    title: "Advantages you feel in the details",
+    items: [
+      "Individual approach",
+      "Fast turnaround",
+      "Premium materials",
+      "Modern design",
+      "International experience",
+      "Full transparency",
+    ],
+  },
+  reviews: {
+    kicker: "Client reviews",
+    title: "Emotions that stay",
+    list: [
+      {
+        name: "Elena & Andrei",
+        role: "Wedding, Chișinău",
+        rating: 5,
+        text: "Our wedding turned into a fairytale. The balloon and flower arch was a true work of art. Thank you for the care in every detail!",
+      },
+      {
+        name: "Marina Crudu",
+        role: "Anniversary",
+        rating: 5,
+        text: "We ordered the décor for my mum's anniversary — the guests were delighted. Everything stylish, luxe and tasteful.",
+      },
+      {
+        name: "Victoria P.",
+        role: "Wedding",
+        rating: 5,
+        text: "Alex and the team read the mood instantly. It turned out even better than we dreamed.",
+      },
+      {
+        name: "Sergiu & Ana",
+        role: "Showroom opening",
+        rating: 5,
+        text: "They organized our showroom opening turnkey. Professional, right on time, no extra questions.",
+      },
+      {
+        name: "Daria Kovalciuc",
+        role: "Photo zone",
+        rating: 5,
+        text: "The photo zone was the highlight of the night — every shot came out magical.",
+      },
+      {
+        name: "Cristina T.",
+        role: "Wedding",
+        rating: 4.5,
+        text: "Premium materials, modern design and full transparency. I recommend them wholeheartedly.",
+      },
+    ],
+  },
+  footer: {
+    kicker: "Get in touch",
+    title: "Tell us about your event — we'll handle the rest",
+    phone: "+373 60 000 000",
+    email: "hello@balloonsbreeze.md",
+    cityLabel: "Moldova · Chișinău",
+    rights: "All rights reserved",
+    admin: "Admin",
+    brandLine: "Corporation Balloons Breeze",
+  },
+  chat: {
+    title: "Balloons Breeze",
+    online: "online",
+    greeting:
+      "Hello! 👋 Thanks for stopping by Balloons Breeze. Tell us what event you're planning — and we'll help you find the perfect solution.",
+    placeholder: "Type a message…",
+    hint: "We usually reply within a few minutes",
+  },
+  admin: {
+    title: "Admin panel",
+    subtitle: "Client conversations",
+    empty: "Select a conversation to reply",
+    emptyList: "No conversations yet",
+    replyPh: "Reply to client…",
+    back: "Back to site",
+    guest: "Guest",
+  },
+  introSkip: "Skip",
+};

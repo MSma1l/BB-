@@ -23,35 +23,51 @@ next/font. Full rationale in `README.md`.
 
 - ✅ Project analyzed; stack chosen; rationale documented.
 - ✅ `README.md` and `ARCHITECTURE.md` written.
-- ❌ **Next.js project NOT scaffolded yet.** This folder currently contains only the docs
-  and the original prototype (below). `create-next-app` has not been run.
+- ✅ **App scaffolded and built** in `frontend/` (see below). All sections, the
+  R3F balloon hero, gallery + lightbox, chat + admin (UI-only), and trilingual
+  i18n are implemented. `npm run build` produces a clean static export to
+  `frontend/out/`, verified visually (desktop + mobile, RU/RO).
 
-**The very next action is to scaffold the Next.js app.**
-
----
-
-## ▶️ Next steps (in order)
-
-1. **Resolve the 2 open decisions** below with the user.
-2. **Scaffold** Next.js 15 (App Router, TypeScript, Tailwind, ESLint).
-3. **Design tokens** → port palette/fonts into Tailwind config + `globals.css`.
-4. **i18n + content** → port the `T` table (RU/RO/EN) + data arrays into `content/` with types.
-5. **Build sections top-to-bottom:** Nav → Hero (R3F balloons) → About → Showcase →
-   Services → Gallery (+lightbox) → Process → Why → Reviews → Footer/CTA → Chat + Admin (UI only).
-6. Wire `assets/` + `uploads/`, run dev server, screenshot to verify.
-
-See `ARCHITECTURE.md §2` for the target folder structure and `§3` for the mock-data contract.
+**The site is feature-complete as a frontend. Next work is content/polish (real
+photos) and the backend handoff (wire the `content/` accessors to an API).**
 
 ---
 
-## ❓ Open decisions (ask the user before scaffolding)
+## ▶️ How to run (in `frontend/`)
 
-1. **Scaffold location** — into **this folder** (docs at repo root) or a clean `frontend/` subfolder?
-   *Leaning: this folder.*
-2. **Package manager** — npm (default) / pnpm / yarn? *Leaning: npm.*
-3. **Mock accessor style** — `ARCHITECTURE.md §3` proposes **async** accessors
-   (`getReviews()`) even for mock data, so the backend swap touches zero components.
-   Recommended; confirm the user is happy with this vs. plain sync arrays.
+```bash
+cd frontend
+npm install        # if node_modules is missing
+npm run dev        # http://localhost:3000
+npm run build      # static export → frontend/out/
+```
+
+## ▶️ Remaining / next steps
+
+1. **Real media** — replace the gallery's CSS-pattern placeholders with the
+   photos in `frontend/public/uploads/` (TODO in `ARCHITECTURE.md §8`).
+2. **Real contact details** — phone/email/Instagram are still placeholders
+   (search `+37360000000`, `hello@balloonsbreeze.md`).
+3. **Backend handoff** — the only swap points are the async accessors in
+   `frontend/content/*` (tagged `// BACKEND:`); see `ARCHITECTURE.md §3`.
+
+---
+
+## ⚙️ Decisions made during the build (differ slightly from original plan)
+
+1. **Location:** clean **`frontend/`** subfolder (docs stay at repo root).
+2. **Package manager:** **npm**.
+3. **Mock accessors:** **async** (`getReviews()` etc.), as recommended.
+4. **Next.js 16, not 15** — `create-next-app@latest` now ships Next 16 + React 19
+   + Tailwind v4. Built on it (latest stable); no blockers.
+5. **i18n is client-side context, not next-intl URL routing** — static export
+   can't run next-intl middleware, and the prototype switched language instantly
+   client-side. Copy still lives as typed data in `content/i18n/`; switching is
+   instant and persists to `localStorage`. The default locale (RU) is what gets
+   pre-rendered into the static HTML for SEO. See `ARCHITECTURE.md §7` decision log.
+6. **Styling is a Tailwind-v4 + inline-style hybrid** — Tailwind for layout +
+   design tokens (`@theme` in `globals.css`); the prototype's intricate gradients
+   / `clamp()` values are kept as inline styles for fidelity.
 
 ---
 
