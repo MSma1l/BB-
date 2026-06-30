@@ -174,7 +174,10 @@ Append one line per non-obvious decision. Newest at top.
 
 ## 8. Open questions / TODO before/at handoff
 
-- [ ] Wire real photos from `public/uploads/` into the gallery (replacing emoji placeholders).
+- [ ] Obtain real event photos from the client, drop them into `frontend/public/uploads/`,
+      and wire them into `content/gallery.ts` (replacing the emoji/CSS placeholders). Note:
+      the original `uploads/` folder was deleted — it held duplicates of the brand assets,
+      not real gallery media.
 - [ ] Confirm real contact details (phone, email, Instagram) — currently placeholders.
 - [ ] Agree final data shapes in `lib/types.ts` with the backend dev.
 - [ ] Decide what the chat/admin becomes (real-time backend vs. contact form) — UI is ready either way.

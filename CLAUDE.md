@@ -71,39 +71,39 @@ npm run build      # static export → frontend/out/
 
 ---
 
-## 📁 Reference files (the original prototype — DO re-read these)
+## 📁 Original prototype (removed — see git history)
 
-The site was first built on a custom "DC" React runtime. These are **reference only** (not
-part of the new build), but they contain all the real content and logic to port:
+The site was first built on a custom "DC" React runtime. Those files
+(`Ballons Breeze.dc.html` — the source with the `T` copy table + Three.js balloon
+/ chat / admin logic; `Ballons Breeze.html` — 7 MB compiled build; `support.js` —
+the DC runtime; `Canvas.dc.html`) have been **deleted now that the rebuild is
+complete**. Everything in them was ported into `frontend/`. If you ever need to
+cross-check the original copy or behaviour, restore from git:
 
-- **`Ballons Breeze.dc.html`** — source: HTML template + `<script type="text/x-dc">` with the
-  `Component extends DCLogic` class. Contains:
-  - The `T` object → full RU/RO/EN copy for every section.
-  - Three.js balloon hero logic (`initBalloons`, click-to-burst `_spawn`).
-  - Chat + admin panel logic (was `localStorage`-based; becomes mock data here).
-  - Props: `defaultLang`, `balloons` (on/off), `accent` (crimson/purple/gold-green/sakura).
-- **`Ballons Breeze.html`** (7 MB) — compiled standalone build (reference/preview only).
-- **`support.js`** — the DC runtime. Reference only; not reused.
-- **`Canvas.dc.html`** — empty DC scaffold.
+```bash
+git show 96bb632:"Ballons Breeze.dc.html" > prototype.html   # the source
+```
 
-### Media to reuse
-- `assets/` — `logo-bb.jpg`, `nebula-bg.jpg`, `intro.mp4`.
-- `uploads/` — real client photos/video (2026-06-29) to wire into the gallery (replacing
-  emoji placeholders).
-- `screenshots/` — rendered previews of the original for visual reference.
+Brand media (`logo-bb.jpg`, `nebula-bg.jpg`, `intro.mp4`) now lives only in
+`frontend/public/assets/`. `screenshots/` (rendered previews of the original)
+is kept at the repo root for visual reference.
 
 ---
 
 ## ⚠️ Known placeholders (not real yet)
 
 - Contact details are fake: phone `+37360000000`, email `hello@balloonsbreeze.md`, Instagram link.
-- Gallery + About images are CSS-pattern placeholders with emoji icons (real media in `uploads/`).
-- Chat/admin had no real persistence — localStorage only in the prototype.
+- Gallery + About images are CSS-pattern placeholders with emoji icons.
+  **There is no real gallery media yet** — the old `uploads/` folder turned out to
+  be byte-identical copies of the brand logo/background/intro, not client event
+  photos, so it was removed. Real event photos still need to be supplied, dropped
+  into `frontend/public/uploads/`, and wired into `content/gallery.ts`.
+- Chat/admin had no real persistence — mock React state only (localStorage in the prototype).
 
 ---
 
 ## 🚚 Moving to a new folder?
 
-Bring **all** of: the two `.dc.html` files, `support.js`, `assets/`, `uploads/`,
-`screenshots/`, and the three `.md` files (`CLAUDE.md`, `README.md`, `ARCHITECTURE.md`).
-With those, a fresh session can fully reconstruct the project context from this file.
+Bring `frontend/` and the three root `.md` files (`CLAUDE.md`, `README.md`,
+`ARCHITECTURE.md`); `screenshots/` is optional reference. With those, a fresh
+session can fully reconstruct the project context from this file.
