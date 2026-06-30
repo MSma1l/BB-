@@ -24,7 +24,7 @@ export const en: Dictionary = {
     kicker: "About us",
     title: "From family heritage to our own brand",
     name: "Alexandr Oganov",
-    role: "Founder · Corporation Balloons Breeze",
+    role: "CEO · Corporation Balloons Breeze",
     bio: "My childhood was spent among weddings, celebrations and décor. I grew up in a family of event organizers, and that experience became the foundation of my own path. Having built my brand in Toronto, today I open a new chapter of its story in Moldova.",
     points: [
       "Experience in the events industry",

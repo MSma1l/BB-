@@ -24,7 +24,7 @@ export const ro: Dictionary = {
     kicker: "Despre noi",
     title: "De la experiența de familie la propriul brand",
     name: "Alexandr Oganov",
-    role: "Fondator · Corporation Balloons Breeze",
+    role: "CEO · Corporation Balloons Breeze",
     bio: "Copilăria mea s-a petrecut printre nunți, sărbători și decor. Am crescut într-o familie de organizatori de evenimente, iar această experiență a devenit baza propriului meu drum. După ce mi-am creat brandul la Toronto, astăzi deschid un nou capitol al poveștii lui în Moldova.",
     points: [
       "Experiență în domeniul evenimentelor",
