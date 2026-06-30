@@ -65,14 +65,6 @@ export default function Footer() {
           <span className="inline-flex items-center gap-2">
             <MapPin size={15} /> {f.cityLabel}
           </span>
-          <a
-            href="https://instagram.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-sand no-underline"
-          >
-            <span className="text-[15px] leading-none">◎</span> Instagram
-          </a>
         </div>
 
         <div className="mt-[54px] flex items-center justify-center gap-[13px]">
