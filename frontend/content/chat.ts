@@ -21,7 +21,7 @@ export function getSeedConversations(locale: Locale): Conversation[] {
       name: "Elena · Chișinău",
       ts: BASE - 4 * MIN,
       messages: [
-        { id: "m1", from: "operator", text: t.chat.greeting, ts: BASE - 30 * MIN },
+        { id: "m1", from: "operator", text: `${t.chat.hello}! ${t.chat.greeting}`, ts: BASE - 30 * MIN },
         {
           id: "m2",
           from: "visitor",
@@ -47,7 +47,7 @@ export function getSeedConversations(locale: Locale): Conversation[] {
       name: "Andrei · Corporate",
       ts: BASE - 22 * MIN,
       messages: [
-        { id: "m1", from: "operator", text: t.chat.greeting, ts: BASE - 50 * MIN },
+        { id: "m1", from: "operator", text: `${t.chat.hello}! ${t.chat.greeting}`, ts: BASE - 50 * MIN },
         {
           id: "m2",
           from: "visitor",
@@ -67,7 +67,7 @@ export function getSeedConversations(locale: Locale): Conversation[] {
       name: "Maria · Birthday",
       ts: BASE - 75 * MIN,
       messages: [
-        { id: "m1", from: "operator", text: t.chat.greeting, ts: BASE - 90 * MIN },
+        { id: "m1", from: "operator", text: `${t.chat.hello}! ${t.chat.greeting}`, ts: BASE - 90 * MIN },
         {
           id: "m2",
           from: "visitor",

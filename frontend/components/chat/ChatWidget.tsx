@@ -6,41 +6,59 @@ import { MessageCircle, X, Send } from "lucide-react";
 import { useT } from "@/lib/i18n";
 import { useUI } from "@/lib/ui";
 import { formatTime } from "@/lib/utils";
-import type { ChatMessage } from "@/lib/types";
+import type { ChatMessage, Dictionary } from "@/lib/types";
 
 // Fixed seed timestamp keeps SSR and first client paint identical.
 const SEED_TS = Date.UTC(2026, 5, 29, 14, 0, 0);
 
+interface Contact {
+  first: string;
+  last: string;
+  phone: string;
+}
+
+/** Personalized welcome: "Hello, {first} {last}! 👋 …". */
+function buildGreeting(t: Dictionary, c: Contact | null): string {
+  const who = c ? `, ${c.first} ${c.last}` : "";
+  return `${t.chat.hello}${who}! ${t.chat.greeting}`;
+}
+
 export default function ChatWidget() {
   const t = useT();
   const { chatOpen, toggleChat, closeChat } = useUI();
+  const [contact, setContact] = useState<Contact | null>(null);
+  const [form, setForm] = useState<Contact>({ first: "", last: "", phone: "" });
   const [draft, setDraft] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const nextId = useRef(1);
 
-  // Seed the operator greeting once the panel is first opened.
-  useEffect(() => {
-    if (chatOpen && messages.length === 0) {
-      setMessages([
-        { id: "greet", from: "operator", text: t.chat.greeting, ts: SEED_TS },
-      ]);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chatOpen]);
-
-  // Keep the greeting localized if the language changes before any reply.
+  // Keep the seeded greeting localized (and named) if the language changes.
   useEffect(() => {
     setMessages((prev) =>
       prev.map((m) =>
-        m.id === "greet" ? { ...m, text: t.chat.greeting } : m,
+        m.id === "greet" ? { ...m, text: buildGreeting(t, contact) } : m,
       ),
     );
-  }, [t]);
+  }, [t, contact]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
-  }, [messages, chatOpen]);
+  }, [messages, chatOpen, contact]);
+
+  const submitContact = (e: React.FormEvent) => {
+    e.preventDefault();
+    const c: Contact = {
+      first: form.first.trim(),
+      last: form.last.trim(),
+      phone: form.phone.trim(),
+    };
+    if (!c.first || !c.last || !c.phone) return;
+    setContact(c);
+    setMessages([
+      { id: "greet", from: "operator", text: buildGreeting(t, c), ts: SEED_TS },
+    ]);
+  };
 
   const send = () => {
     const text = draft.trim();
@@ -51,6 +69,14 @@ export default function ChatWidget() {
     ]);
     setDraft("");
   };
+
+  const formValid =
+    form.first.trim() && form.last.trim() && form.phone.trim();
+
+  const inputStyle = {
+    border: "1px solid rgba(231,178,76,.22)",
+    background: "rgba(231,178,76,.05)",
+  } as const;
 
   return (
     <div className="fixed bottom-[clamp(16px,3vw,30px)] right-[clamp(16px,3vw,30px)] z-[60] flex flex-col items-end gap-[14px]">
@@ -103,41 +129,88 @@ export default function ChatWidget() {
             </button>
           </div>
 
-          {/* messages */}
-          <div ref={scrollRef} className="flex flex-1 flex-col gap-3 overflow-y-auto p-[18px]">
-            {messages.map((m) => (
-              <Bubble key={m.id} mine={m.from === "visitor"} text={m.text} time={formatTime(m.ts)} />
-            ))}
-            <div className="mt-auto text-center text-[11px] text-dim">{t.chat.hint}</div>
-          </div>
-
-          {/* composer */}
-          <div
-            className="flex gap-[9px] p-[13px]"
-            style={{ borderTop: "1px solid rgba(231,178,76,.18)", background: "rgba(8,4,10,.5)" }}
-          >
-            <input
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  send();
-                }
-              }}
-              placeholder={t.chat.placeholder}
-              className="flex-1 rounded-[11px] px-[15px] py-[13px] text-[14px] text-cream outline-none"
-              style={{ border: "1px solid rgba(231,178,76,.22)", background: "rgba(231,178,76,.05)" }}
-            />
-            <button
-              onClick={send}
-              aria-label="Send"
-              className="flex w-[46px] flex-none items-center justify-center rounded-[11px] border-none text-[18px] bb-gold-btn"
-              style={{ boxShadow: "none" }}
+          {!contact ? (
+            /* first-open intake form */
+            <form
+              onSubmit={submitContact}
+              className="flex flex-1 flex-col gap-3 overflow-y-auto p-[18px]"
             >
-              <Send size={18} />
-            </button>
-          </div>
+              <div className="font-display text-[20px] text-gold-300">
+                {t.chat.formTitle}
+              </div>
+              <input
+                value={form.first}
+                onChange={(e) => setForm((f) => ({ ...f, first: e.target.value }))}
+                placeholder={t.chat.namePh}
+                autoFocus
+                className="rounded-[11px] px-[15px] py-[13px] text-[14px] text-cream outline-none"
+                style={inputStyle}
+              />
+              <input
+                value={form.last}
+                onChange={(e) => setForm((f) => ({ ...f, last: e.target.value }))}
+                placeholder={t.chat.surnamePh}
+                className="rounded-[11px] px-[15px] py-[13px] text-[14px] text-cream outline-none"
+                style={inputStyle}
+              />
+              <input
+                value={form.phone}
+                onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                placeholder={t.chat.phonePh}
+                type="tel"
+                inputMode="tel"
+                className="rounded-[11px] px-[15px] py-[13px] text-[14px] text-cream outline-none"
+                style={inputStyle}
+              />
+              <button
+                type="submit"
+                disabled={!formValid}
+                className="mt-1 rounded-[11px] border-none py-[13px] text-[15px] font-semibold bb-gold-btn disabled:cursor-not-allowed disabled:opacity-50"
+                style={{ boxShadow: "none" }}
+              >
+                {t.chat.start}
+              </button>
+              <div className="mt-auto text-center text-[11px] text-dim">{t.chat.hint}</div>
+            </form>
+          ) : (
+            <>
+              {/* messages */}
+              <div ref={scrollRef} className="flex flex-1 flex-col gap-3 overflow-y-auto p-[18px]">
+                {messages.map((m) => (
+                  <Bubble key={m.id} mine={m.from === "visitor"} text={m.text} time={formatTime(m.ts)} />
+                ))}
+                <div className="mt-auto text-center text-[11px] text-dim">{t.chat.hint}</div>
+              </div>
+
+              {/* composer */}
+              <div
+                className="flex gap-[9px] p-[13px]"
+                style={{ borderTop: "1px solid rgba(231,178,76,.18)", background: "rgba(8,4,10,.5)" }}
+              >
+                <input
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      send();
+                    }
+                  }}
+                  placeholder={t.chat.placeholder}
+                  className="flex-1 rounded-[11px] px-[15px] py-[13px] text-[14px] text-cream outline-none"
+                  style={inputStyle}
+                />
+                <button
+                  onClick={send}
+                  aria-label="Send"
+                  className="flex w-[46px] flex-none items-center justify-center rounded-[11px] border-none text-[18px] bb-gold-btn"
+                  style={{ boxShadow: "none" }}
+                >
+                  <Send size={18} />
+                </button>
+              </div>
+            </>
+          )}
         </div>
       ) : null}
 

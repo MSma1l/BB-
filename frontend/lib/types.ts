@@ -161,9 +161,18 @@ export interface Dictionary {
   chat: {
     title: string;
     online: string;
+    /** Salutation word, e.g. "Hello" — composed with the visitor's name. */
+    hello: string;
+    /** Greeting body shown after the salutation. */
     greeting: string;
     placeholder: string;
     hint: string;
+    /** First-open intake form. */
+    formTitle: string;
+    namePh: string;
+    surnamePh: string;
+    phonePh: string;
+    start: string;
   };
   admin: {
     title: string;

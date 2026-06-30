@@ -207,10 +207,16 @@ export const ro: Dictionary = {
   chat: {
     title: "Balloons Breeze",
     online: "online",
+    hello: "Bună ziua",
     greeting:
-      "Bună ziua! 👋 Mulțumim că ai trecut pe la Balloons Breeze. Spune-ne ce eveniment plănuiești — și te ajutăm să găsim soluția perfectă.",
+      "👋 Mulțumim că ai trecut pe la Balloons Breeze. Spune-ne ce eveniment plănuiești și te ajutăm să găsim soluția perfectă.",
     placeholder: "Scrie un mesaj…",
     hint: "De obicei răspundem în câteva minute",
+    formTitle: "Să facem cunoștință",
+    namePh: "Prenume",
+    surnamePh: "Nume",
+    phonePh: "Număr de telefon",
+    start: "Începe conversația",
   },
   admin: {
     title: "Panou administrator",

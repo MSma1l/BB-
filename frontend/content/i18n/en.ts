@@ -197,10 +197,16 @@ export const en: Dictionary = {
   chat: {
     title: "Balloons Breeze",
     online: "online",
+    hello: "Hello",
     greeting:
-      "Hello! 👋 Thanks for stopping by Balloons Breeze. Tell us what event you're planning — and we'll help you find the perfect solution.",
+      "👋 Thanks for stopping by Balloons Breeze. Tell us what event you're planning and we'll help you find the perfect solution.",
     placeholder: "Type a message…",
     hint: "We usually reply within a few minutes",
+    formTitle: "Let's get acquainted",
+    namePh: "Name",
+    surnamePh: "Surname",
+    phonePh: "Phone number",
+    start: "Start chat",
   },
   admin: {
     title: "Admin panel",
