@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Balloons Breeze — frontend app
 
-## Getting Started
+The Next.js app for the Balloons Breeze landing site. This is a **frontend-only**
+build: all dynamic content runs on typed mock data designed to be swapped for a
+real API later (see the repo-root docs).
 
-First, run the development server:
+**Stack:** Next.js 16 (App Router, static export) · React 19 · TypeScript ·
+Tailwind CSS v4 · React Three Fiber · Framer Motion · lucide-react. Trilingual
+(RU / RO / EN) via a client-side locale context.
+
+## Commands
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install      # install dependencies
+npm run dev      # dev server → http://localhost:3000
+npm run lint     # ESLint
+npm run build    # static export → ./out
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+> Requires Node.js 20.9+.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Layout
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+app/            # App Router: single route, root layout + <Providers>
+components/      # layout/ · sections/ · hero/ (R3F) · chat/ · ui/
+content/         # typed mock data + async accessors (the backend boundary)
+  i18n/          # RU / RO / EN dictionaries
+lib/             # i18n + ui providers, types, theme tokens, utils
+public/assets/   # logo, nebula background, intro video
+```
 
-## Learn More
+## Where to read more
 
-To learn more about Next.js, take a look at the following resources:
+These live at the **repo root** (one level up):
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **`../CLAUDE.md`** — current status, how to run, decisions, open items.
+- **`../ARCHITECTURE.md`** — folder structure, the mock-data contract for the
+  backend handoff, i18n strategy, styling conventions, and the decision log.
+- **`../README.md`** — stack rationale.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Backend handoff in one line
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Components never read raw mock arrays — they go through the async accessors in
+`content/*` (tagged `// BACKEND:`). Swapping in a real API means changing only
+those function bodies; the typed shapes live in `lib/types.ts`.

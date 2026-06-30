@@ -13,9 +13,11 @@ site for an event-décor company. **No backend, no DB, no API calls** — the wh
 typed mock data so a colleague can wire in real data later. The frontend dev's job is pure
 UI/UX.
 
-Agreed stack: **React + Next.js 15 (App Router, static export) + TypeScript + Tailwind CSS**,
-with React Three Fiber (3D balloon hero), Framer Motion, next-intl (i18n), lucide-react,
-next/font. Full rationale in `README.md`.
+Stack (as built): **React 19 + Next.js 16 (App Router, static export) + TypeScript +
+Tailwind CSS v4**, with React Three Fiber (3D balloon hero), Framer Motion, lucide-react,
+next/font, and a **client-side React context for i18n** (RU/RO/EN). Full rationale in
+`README.md`; the deviations from the original plan are in the decision log below and in
+`ARCHITECTURE.md §7`.
 
 ---
 
