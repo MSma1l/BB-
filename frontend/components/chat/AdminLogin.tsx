@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useT } from "@/lib/i18n";
 import { login } from "@/lib/auth";
+import LangSwitch from "@/components/ui/LangSwitch";
 
 /** Login gate for the /admin route. Calls lib/auth.login() (backend swap point). */
 export default function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
@@ -43,18 +44,21 @@ export default function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
           boxShadow: "0 30px 80px rgba(0,0,0,.6)",
         }}
       >
-        <div className="mb-1 flex items-center gap-3">
-          <Image
-            src="/assets/logo-bb.jpg"
-            alt="BB"
-            width={42}
-            height={42}
-            className="h-[42px] w-[42px] rounded-full object-cover"
-            style={{ mixBlendMode: "screen" }}
-          />
-          <div className="font-display text-[20px] tracking-[0.04em] text-gold-300">
-            {t.admin.loginTitle}
+        <div className="mb-1 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <Image
+              src="/assets/logo-bb.jpg"
+              alt="BB"
+              width={42}
+              height={42}
+              className="h-[42px] w-[42px] rounded-full object-cover"
+              style={{ mixBlendMode: "screen" }}
+            />
+            <div className="font-display text-[20px] leading-tight tracking-[0.04em] text-gold-300">
+              {t.admin.loginTitle}
+            </div>
           </div>
+          <LangSwitch />
         </div>
 
         <input
