@@ -8,18 +8,13 @@ const PHONE = "+37360000000";
 
 export default function Hero() {
   const t = useT();
-  const { openChat, triggerBurst } = useUI();
+  const { openChat } = useUI();
 
-  // The sky + balloons are now the global site background (SiteBackground).
-  // The hero just keeps the click-to-burst interaction.
-  const handleClick = (e: React.MouseEvent<HTMLElement>) => {
-    triggerBurst(e.clientX, e.clientY);
-  };
-
+  // The sky + balloons are the global background, and click-to-burst now works
+  // anywhere on the page (handled globally in SiteBackground).
   return (
     <section
-      onClick={handleClick}
-      className="relative flex cursor-pointer items-center overflow-hidden"
+      className="relative flex items-center overflow-hidden"
       style={{ minHeight: "100svh" }}
     >
       <div className="relative z-[2] mx-auto w-[min(88%,1180px)] py-[120px] pb-[90px] text-center">

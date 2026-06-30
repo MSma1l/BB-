@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useUI } from "@/lib/ui";
 
@@ -15,7 +16,14 @@ const Balloons3D = dynamic(() => import("@/components/hero/Balloons3D"), {
  * context (Hero triggers it on click).
  */
 export default function SiteBackground() {
-  const { burstRef } = useUI();
+  const { burstRef, triggerBurst } = useUI();
+
+  // Release balloons on a click/tap anywhere on the page (was hero-only).
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => triggerBurst(e.clientX, e.clientY);
+    window.addEventListener("click", onClick);
+    return () => window.removeEventListener("click", onClick);
+  }, [triggerBurst]);
 
   return (
     <div
