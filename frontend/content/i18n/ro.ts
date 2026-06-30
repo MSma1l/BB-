@@ -232,6 +232,16 @@ export const ro: Dictionary = {
     signIn: "Conectare",
     loginError: "Utilizator sau parolă incorecte",
     logout: "Deconectare",
+    nav: { messages: "Mesaje", photos: "Fotografii" },
+    phoneLabel: "Telefon",
+    photos: {
+      title: "Fotografiile site-ului",
+      intro: "Gestionează imaginile afișate pe site.",
+      replace: "Înlocuiește foto",
+      profile: "Foto din secțiunea „Despre noi”",
+      showcase: "Vitrina lucrărilor",
+      note: "Mod demo: modificările sunt vizibile doar în această fereastră și încă nu se salvează. Încărcarea reală va fi conectată de backend.",
+    },
   },
   introSkip: "Sări peste",
 };

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import AdminLogin from "@/components/chat/AdminLogin";
-import AdminPanel from "@/components/chat/AdminPanel";
+import AdminShell from "@/components/admin/AdminShell";
 import { isAuthed, logout } from "@/lib/auth";
 
 /**
@@ -22,7 +22,7 @@ export default function AdminRoute() {
   if (!ready) return null;
 
   return authed ? (
-    <AdminPanel
+    <AdminShell
       onLogout={() => {
         logout();
         setAuthed(false);

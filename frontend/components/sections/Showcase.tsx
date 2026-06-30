@@ -3,16 +3,7 @@
 import { useT } from "@/lib/i18n";
 import Reveal from "@/components/ui/Reveal";
 import Carousel from "@/components/ui/Carousel";
-
-const SHOWCASE_PHOTOS = [
-  "/photos/wedding1.jpg",
-  "/photos/wedding2.jpg",
-  "/photos/wedding3.jpg",
-  "/photos/wedding4.jpg",
-  "/photos/wedding5.jpg",
-  "/photos/torronto1.jpg",
-  "/photos/torronto2.jpg",
-];
+import { showcasePhotos } from "@/content/photos";
 
 /** Wide image strip between About and Services (2nd placeholder zone). */
 export default function Showcase() {
@@ -36,7 +27,7 @@ export default function Showcase() {
             }}
           >
             <Carousel
-              images={SHOWCASE_PHOTOS}
+              images={showcasePhotos}
               alt={t.about.imgB}
               sizes="(max-width:1480px) 88vw, 1480px"
             />

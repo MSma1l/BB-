@@ -3,12 +3,7 @@
 import { useT } from "@/lib/i18n";
 import Reveal from "@/components/ui/Reveal";
 import Carousel from "@/components/ui/Carousel";
-
-const PROFILE_PHOTOS = [
-  "/photos/profile1.jpg",
-  "/photos/profile2.jpg",
-  "/photos/profile3.jpg",
-];
+import { profilePhotos } from "@/content/photos";
 
 export default function About() {
   const t = useT();
@@ -102,7 +97,7 @@ export default function About() {
                 }}
               >
                 <Carousel
-                  images={PROFILE_PHOTOS}
+                  images={profilePhotos}
                   alt={a.name}
                   sizes="(max-width:880px) 100vw, 40vw"
                   priority

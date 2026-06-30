@@ -76,7 +76,10 @@ export interface ChatMessage {
 
 export interface Conversation {
   id: string;
-  name: string;
+  /** Customer contact, collected by the chat intake form. */
+  first: string;
+  last: string;
+  phone: string;
   messages: ChatMessage[];
   /** Epoch ms of last activity. */
   ts: number;
@@ -189,6 +192,19 @@ export interface Dictionary {
     signIn: string;
     loginError: string;
     logout: string;
+    /** Dashboard section menu. */
+    nav: { messages: string; photos: string };
+    /** Phone label in the conversation header. */
+    phoneLabel: string;
+    /** Photo-management section. */
+    photos: {
+      title: string;
+      intro: string;
+      replace: string;
+      profile: string;
+      showcase: string;
+      note: string;
+    };
   };
   /** Intro preloader "skip" label. */
   introSkip: string;

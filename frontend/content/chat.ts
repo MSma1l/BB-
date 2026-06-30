@@ -18,7 +18,9 @@ export function getSeedConversations(locale: Locale): Conversation[] {
   return [
     {
       id: "demo-elena",
-      name: "Elena · Chișinău",
+      first: "Elena",
+      last: "Rusu",
+      phone: "+373 60 111 222",
       ts: BASE - 4 * MIN,
       messages: [
         { id: "m1", from: "operator", text: `${t.chat.hello}! ${t.chat.greeting}`, ts: BASE - 30 * MIN },
@@ -44,7 +46,9 @@ export function getSeedConversations(locale: Locale): Conversation[] {
     },
     {
       id: "demo-andrei",
-      name: "Andrei · Corporate",
+      first: "Andrei",
+      last: "Cojocaru",
+      phone: "+373 69 333 444",
       ts: BASE - 22 * MIN,
       messages: [
         { id: "m1", from: "operator", text: `${t.chat.hello}! ${t.chat.greeting}`, ts: BASE - 50 * MIN },
@@ -64,7 +68,9 @@ export function getSeedConversations(locale: Locale): Conversation[] {
     },
     {
       id: "demo-maria",
-      name: "Maria · Birthday",
+      first: "Maria",
+      last: "Ungureanu",
+      phone: "+373 78 555 666",
       ts: BASE - 75 * MIN,
       messages: [
         { id: "m1", from: "operator", text: `${t.chat.hello}! ${t.chat.greeting}`, ts: BASE - 90 * MIN },

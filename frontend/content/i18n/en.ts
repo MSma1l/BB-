@@ -222,6 +222,16 @@ export const en: Dictionary = {
     signIn: "Sign in",
     loginError: "Incorrect username or password",
     logout: "Log out",
+    nav: { messages: "Messages", photos: "Photos" },
+    phoneLabel: "Phone",
+    photos: {
+      title: "Site photos",
+      intro: "Manage the images shown on the site.",
+      replace: "Replace photo",
+      profile: "About section photos",
+      showcase: "Work showcase",
+      note: "Demo mode: changes are visible in this window only and are not saved yet. Real uploads will be wired up by the backend.",
+    },
   },
   introSkip: "Skip",
 };

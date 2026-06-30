@@ -109,6 +109,11 @@ is kept at the repo root for visual reference.
   not real security — credentials ship in the bundle. The footer no longer links
   to it. **Backend swap:** replace `login()` in `lib/auth.ts` with a real auth API
   (and/or protect `/admin` at the host with Vercel/Netlify/Cloudflare Access).
+- The admin is a **dashboard** (`components/admin/AdminShell.tsx`) with a section
+  menu: **Messages** (per-customer inbox; each thread shows name + surname + phone)
+  and **Photos** (replace the About/Showcase images). Photo replacement is a
+  **session-only preview mock** (object URLs) — BACKEND uploads it for real. Site
+  photo lists are centralized in `content/photos.ts`.
 
 ---
 
