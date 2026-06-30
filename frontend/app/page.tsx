@@ -1,3 +1,4 @@
+import SiteBackground from "@/components/SiteBackground";
 import Nav from "@/components/layout/Nav";
 import Footer from "@/components/layout/Footer";
 import Hero from "@/components/hero/Hero";
@@ -16,8 +17,14 @@ export default function Home() {
   return (
     <div id="top" className="relative">
       <IntroPreloader />
-      <Nav />
-      <main>
+
+      {/* Sky + floating balloons, fixed behind everything */}
+      <SiteBackground />
+
+      {/* All page content sits above the background */}
+      <div className="relative z-[1]">
+        <Nav />
+        <main>
         <Hero />
         <About />
         <Showcase />
@@ -25,9 +32,10 @@ export default function Home() {
         <Gallery />
         <Process />
         <Why />
-        <Reviews />
-      </main>
-      <Footer />
+          <Reviews />
+        </main>
+        <Footer />
+      </div>
 
       {/* Floating + overlay UI (read open-state from the UI context) */}
       <ChatWidget />

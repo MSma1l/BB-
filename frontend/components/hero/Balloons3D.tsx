@@ -3,13 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
-
-/** Imperative burst signal Hero mutates on click; the field watches `n`. */
-export interface BurstSignal {
-  x: number; // 0..1 across the canvas
-  y: number; // 0..1 down the canvas
-  n: number; // increments per click
-}
+import type { BurstSignal } from "@/lib/types";
 
 type BalloonKind = "gold" | "rose";
 
@@ -73,7 +67,6 @@ function BalloonField({ burstRef }: { burstRef: React.RefObject<BurstSignal> }) 
   const idCounter = useRef(0);
   const lastBurst = useRef(0);
   const pointer = useRef({ x: 0.5, y: 0.5 });
-  const scrollY = useRef(0);
 
   // Shared geometries + materials (ambient balloons share; bursts clone).
   const sphere = useMemo(() => new THREE.SphereGeometry(1, 40, 40), []);
@@ -126,21 +119,15 @@ function BalloonField({ burstRef }: { burstRef: React.RefObject<BurstSignal> }) 
   const balloonsRef = useRef(balloons);
   balloonsRef.current = balloons;
 
-  // Pointer + scroll parallax inputs.
+  // Pointer parallax input (the field is a fixed full-page layer, so it does
+  // not react to scroll — balloons drift perpetually in view).
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
       pointer.current.x = e.clientX / Math.max(1, window.innerWidth);
       pointer.current.y = e.clientY / Math.max(1, window.innerHeight);
     };
-    const onScroll = () => {
-      scrollY.current = window.scrollY || 0;
-    };
     window.addEventListener("mousemove", onMove);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("scroll", onScroll);
-    };
+    return () => window.removeEventListener("mousemove", onMove);
   }, []);
 
   useFrame((state, delta) => {
@@ -201,11 +188,10 @@ function BalloonField({ burstRef }: { burstRef: React.RefObject<BurstSignal> }) 
       g.rotation.z = Math.sin(t * b.sws + b.sway) * 0.14;
     }
 
-    // Group-level parallax.
+    // Group-level mouse parallax.
     if (groupRef.current) {
       groupRef.current.rotation.y = (pointer.current.x - 0.5) * 0.5;
       groupRef.current.rotation.x = (pointer.current.y - 0.5) * -0.22;
-      groupRef.current.position.y = -scrollY.current * 0.012;
     }
   });
 

@@ -1,44 +1,19 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import dynamic from "next/dynamic";
 import { Phone, MessageCircle } from "lucide-react";
 import { useT } from "@/lib/i18n";
 import { useUI } from "@/lib/ui";
-import type { BurstSignal } from "@/components/hero/Balloons3D";
-
-// WebGL must not render on the server.
-const Balloons3D = dynamic(() => import("@/components/hero/Balloons3D"), {
-  ssr: false,
-});
 
 const PHONE = "+37360000000";
 
 export default function Hero() {
   const t = useT();
-  const { openChat } = useUI();
-  const burstRef = useRef<BurstSignal>({ x: 0.5, y: 0.5, n: 0 });
-  const nebulaRef = useRef<HTMLDivElement>(null);
+  const { openChat, triggerBurst } = useUI();
 
-  // Subtle nebula parallax on scroll (matches the prototype).
-  useEffect(() => {
-    const onScroll = () => {
-      const y = window.scrollY || 0;
-      if (nebulaRef.current) {
-        nebulaRef.current.style.transform = `translateY(${y * 0.28}px) scale(1.08)`;
-      }
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
+  // The sky + balloons are now the global site background (SiteBackground).
+  // The hero just keeps the click-to-burst interaction.
   const handleClick = (e: React.MouseEvent<HTMLElement>) => {
-    const r = e.currentTarget.getBoundingClientRect();
-    burstRef.current = {
-      x: (e.clientX - r.left) / Math.max(1, r.width),
-      y: (e.clientY - r.top) / Math.max(1, r.height),
-      n: burstRef.current.n + 1,
-    };
+    triggerBurst(e.clientX, e.clientY);
   };
 
   return (
@@ -47,25 +22,6 @@ export default function Hero() {
       className="relative flex cursor-pointer items-center overflow-hidden"
       style={{ minHeight: "100svh" }}
     >
-      <div
-        ref={nebulaRef}
-        className="pointer-events-none absolute"
-        style={{
-          inset: "-6%",
-          background: "url('/assets/nebula-bg.jpg') center/cover no-repeat",
-          willChange: "transform",
-        }}
-      />
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 70% at 50% 42%,rgba(8,4,10,.05),rgba(8,4,10,.74) 66%,#08040a)",
-        }}
-      />
-
-      <Balloons3D burstRef={burstRef} />
-
       <div className="relative z-[2] mx-auto w-[min(88%,1180px)] py-[120px] pb-[90px] text-center">
         <div
           className="mb-[30px] inline-flex items-center gap-[10px] rounded-full px-5 py-[9px]"

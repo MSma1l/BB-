@@ -17,17 +17,12 @@ export default function Footer() {
       className="relative overflow-hidden"
       style={{ padding: "clamp(70px,9vw,130px) 0 50px" }}
     >
+      {/* gentle top fade to separate the footer from the section above; the
+          sky + balloons (global background) show through the rest */}
       <div
-        className="pointer-events-none absolute inset-0"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[220px]"
         style={{
-          background: "url('/assets/nebula-bg.jpg') center/cover",
-          opacity: 0.22,
-        }}
-      />
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background: "linear-gradient(180deg,#08040a,rgba(8,4,10,.7))",
+          background: "linear-gradient(180deg,rgba(8,4,10,.6),transparent)",
         }}
       />
       <div className="relative mx-auto w-[min(88%,1100px)] text-center">

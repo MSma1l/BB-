@@ -14,7 +14,6 @@ export default function Services() {
       style={{
         scrollMarginTop: 90,
         padding: "clamp(70px,9vw,140px) 0",
-        background: "linear-gradient(180deg,#08040a,#0d0612 50%,#08040a)",
       }}
     >
       <div className="mx-auto w-[min(88%,1480px)]">

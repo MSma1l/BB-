@@ -13,6 +13,17 @@ export const DEFAULT_LOCALE: Locale = "ru";
 /** Accent themes ported from the DC prototype (`accent` prop). */
 export type Accent = "crimson" | "purple" | "gold-green" | "sakura";
 
+/**
+ * Imperative click-to-burst signal for the balloon background. `x`/`y` are
+ * normalized (0..1) viewport coordinates; `n` increments per click so the
+ * balloon field can detect a new burst on its animation tick.
+ */
+export interface BurstSignal {
+  x: number;
+  y: number;
+  n: number;
+}
+
 /** Gallery category keys — locale-independent; labels come from the dictionary. */
 export type GalleryCategory =
   | "weddings"
