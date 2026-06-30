@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:#08040a;color:#f1e7d6;font-family:'Jost',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+:root{--bb-accent:#b3243a;--bb-accent-deep:#5a0f1c}
+::selection{background:#e7b24c;color:#1a0a0e}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:#0c060e}
+::-webkit-scrollbar-thumb{background:linear-gradient(#7c4f12,#3a2208);border-radius:9px}
+input,button,textarea{font-family:inherit}
+@keyframes bbRise{from{opacity:0;transform:translateY(34px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bbBob{0%,100%{transform:translateY(0)}50%{transform:translateY(9px)}}
+@keyframes bbPulse{0%,100%{box-shadow:0 0 0 0 rgba(231,178,76,.45),0 14px 34px rgba(0,0,0,.5)}50%{box-shadow:0 0 0 12px rgba(231,178,76,0),0 14px 34px rgba(0,0,0,.5)}}
+@keyframes bbShine{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+@keyframes bbBlink{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes bbMoonIn{0%{opacity:0;transform:scale(.35) rotate(-12deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+@keyframes bbLogoIn{0%{opacity:0;transform:translateY(16px);filter:blur(6px)}100%{opacity:1;transform:translateY(0);filter:blur(0)}}
+@keyframes bbPop{0%{opacity:0;transform:translate(-50%,-50%) scale(0)}70%{opacity:1;transform:translate(-50%,-50%) scale(1.14)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+</style>
+<script src="https://unpkg.com/three@0.149.0/build/three.min.js"></script>
+</helmet>
+<div id="top" style="position:relative">
+
+<template id="__bundler_thumbnail" data-bg-color="#08040a">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#08040a"/>
+    <circle cx="585" cy="360" r="160" fill="#e7b24c"/>
+    <circle cx="655" cy="312" r="160" fill="#08040a"/>
+    <text x="600" y="650" font-family="Georgia, 'Times New Roman', serif" font-size="150" font-weight="600" fill="#e7b24c" text-anchor="middle" letter-spacing="14">BB</text>
+  </svg>
+</template>
+
+<!-- ===== INTRO PRELOADER ===== -->
+<sc-if value="{{ intro }}">
+<div style="position:fixed;inset:0;z-index:999;background:#06030a;overflow:hidden;display:flex;align-items:center;justify-content:center;opacity:{{ introOpacity }};transition:opacity .6s ease">
+  <video src="assets/intro.mp4" autoplay muted playsinline preload="auto" onEnded="{{ endIntro }}" style="width:100%;height:100%;object-fit:contain;background:#06030a"></video>
+  <button onClick="{{ endIntro }}" style="position:absolute;bottom:30px;left:50%;transform:translateX(-50%);background:none;border:none;color:#8d7b5e;font-size:11px;letter-spacing:.28em;text-transform:uppercase;cursor:pointer">{{ introSkip }} →</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ showSite }}" hint-placeholder-val="{{ true }}">
+<div>
+
+<!-- ===== NAV (desktop) ===== -->
+<sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+<nav style="position:fixed;top:0;left:0;right:0;z-index:50;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);background:linear-gradient(180deg,rgba(8,4,10,.9),rgba(8,4,10,.45));border-bottom:1px solid rgba(231,178,76,.14)">
+  <div style="width:min(88%,1480px);margin:0 auto;height:80px;display:flex;align-items:center;justify-content:space-between;gap:24px">
+    <a href="#top" style="display:flex;align-items:center;gap:13px;text-decoration:none">
+      <img src="assets/logo-bb.jpg" alt="BB" style="width:48px;height:48px;object-fit:cover;border-radius:50%;mix-blend-mode:screen">
+      <span style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;letter-spacing:.2em;color:#f0dca8;text-transform:uppercase">Balloons Breeze</span>
+    </a>
+    <div style="display:flex;align-items:center;gap:30px">
+      <sc-for list="{{ navLinks }}" as="lnk" hint-placeholder-count="6">
+        <a href="{{ lnk.href }}" style="text-decoration:none;color:#cdbfa6;font-size:14px;letter-spacing:.04em;font-weight:400;transition:color .25s" style-hover="color:#f4d98f">{{ lnk.label }}</a>
+      </sc-for>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px">
+      <div style="display:flex;gap:4px;padding:4px;border:1px solid rgba(231,178,76,.2);border-radius:999px">
+        <sc-for list="{{ langs }}" as="l" hint-placeholder-count="3">
+          <button onClick="{{ l.onClick }}" style="{{ l.style }}">{{ l.label }}</button>
+        </sc-for>
+      </div>
+      <a href="tel:+37360000000" style="display:inline-flex;align-items:center;gap:9px;padding:13px 24px;border-radius:999px;background:linear-gradient(180deg,#fbe7a8,#e7b24c 55%,#bd8a2e);color:#2a1606;font-weight:600;font-size:14px;letter-spacing:.03em;text-decoration:none;box-shadow:0 8px 22px rgba(231,178,76,.26),inset 0 1px 0 rgba(255,255,255,.5)">☎ {{ t.hero.call }}</a>
+    </div>
+  </div>
+</nav>
+</sc-if>
+
+<!-- ===== NAV (mobile) ===== -->
+<sc-if value="{{ isMobile }}">
+<nav style="position:fixed;top:0;left:0;right:0;z-index:50;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);background:linear-gradient(180deg,rgba(8,4,10,.94),rgba(8,4,10,.6));border-bottom:1px solid rgba(231,178,76,.14)">
+  <div style="width:90%;margin:0 auto;height:66px;display:flex;align-items:center;justify-content:space-between">
+    <a href="#top" style="display:flex;align-items:center;gap:10px;text-decoration:none">
+      <img src="assets/logo-bb.jpg" alt="BB" style="width:40px;height:40px;object-fit:cover;border-radius:50%;mix-blend-mode:screen">
+      <span style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;letter-spacing:.16em;color:#f0dca8;text-transform:uppercase">B. Breeze</span>
+    </a>
+    <button onClick="{{ toggleMenu }}" style="width:46px;height:46px;border-radius:12px;border:1px solid rgba(231,178,76,.3);background:rgba(231,178,76,.07);color:#f4d98f;font-size:20px;cursor:pointer">☰</button>
+  </div>
+</nav>
+<sc-if value="{{ menuOpen }}">
+<div style="position:fixed;inset:0;z-index:55;background:rgba(8,4,10,.97);backdrop-filter:blur(8px);display:flex;flex-direction:column;padding:90px 9% 40px">
+  <button onClick="{{ toggleMenu }}" style="position:absolute;top:18px;right:9%;width:46px;height:46px;border-radius:12px;border:1px solid rgba(231,178,76,.3);background:transparent;color:#f4d98f;font-size:22px;cursor:pointer">✕</button>
+  <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">
+    <sc-for list="{{ navLinks }}" as="lnk" hint-placeholder-count="6">
+      <a href="{{ lnk.href }}" onClick="{{ closeMenu }}" style="text-decoration:none;color:#ecdcb8;font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:500;padding:12px 0;border-bottom:1px solid rgba(231,178,76,.1)">{{ lnk.label }}</a>
+    </sc-for>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:30px;padding:5px;border:1px solid rgba(231,178,76,.2);border-radius:999px;align-self:flex-start">
+    <sc-for list="{{ langs }}" as="l" hint-placeholder-count="3">
+      <button onClick="{{ l.onClick }}" style="{{ l.style }}">{{ l.label }}</button>
+    </sc-for>
+  </div>
+  <a href="tel:+37360000000" style="margin-top:26px;text-align:center;padding:16px;border-radius:999px;background:linear-gradient(180deg,#fbe7a8,#e7b24c 55%,#bd8a2e);color:#2a1606;font-weight:600;text-decoration:none">☎ {{ t.hero.call }}</a>
+</div>
+</sc-if>
+</sc-if>
+
+<!-- ===== HERO ===== -->
+<section onClick="{{ heroClick }}" style="position:relative;min-height:100svh;display:flex;align-items:center;overflow:hidden;cursor:pointer">
+  <div id="bb-nebula" style="position:absolute;inset:-6%;background:url('assets/nebula-bg.jpg') center/cover no-repeat;will-change:transform;pointer-events:none"></div>
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 70% at 50% 42%,rgba(8,4,10,.05),rgba(8,4,10,.74) 66%,#08040a);pointer-events:none"></div>
+  <canvas id="bb-balloons" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
+  <div style="position:relative;width:min(88%,1180px);margin:0 auto;text-align:center;padding:120px 0 90px;z-index:2">
+    <div style="display:inline-flex;align-items:center;gap:10px;padding:9px 20px;border:1px solid rgba(231,178,76,.34);border-radius:999px;margin-bottom:30px;background:rgba(20,8,14,.35);backdrop-filter:blur(4px)">
+      <span style="width:7px;height:7px;border-radius:50%;background:#e7b24c;box-shadow:0 0 10px #e7b24c"></span>
+      <span style="font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:#e7c98a">Corporation Balloons Breeze</span>
+    </div>
+    <h1 style="font-family:'Cormorant Garamond',serif;font-weight:600;line-height:1.02;margin:0 auto;letter-spacing:.01em">
+      <span style="display:block;font-size:clamp(30px,4.6vw,60px);color:#efe2c6;font-weight:500">{{ t.hero.titleA }}</span>
+      <span style="display:block;font-size:clamp(34px,5.4vw,74px);background:linear-gradient(180deg,#fdeecb,#eab84f 46%,#b6822a);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 2px 46px rgba(231,178,76,.22)">{{ t.hero.titleB }}</span>
+    </h1>
+    <p style="margin:22px auto 0;max-width:26ch;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(18px,2.2vw,28px);line-height:1.36;color:#e7c987">{{ t.hero.tagline }}</p>
+    <p style="margin:20px auto 0;max-width:48ch;font-size:clamp(12px,1.25vw,15px);letter-spacing:.14em;color:#bcab8c;font-weight:300">{{ t.hero.sub }}</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:42px">
+      <a href="tel:+37360000000" style="display:inline-flex;align-items:center;gap:11px;padding:17px 34px;border-radius:999px;background:linear-gradient(180deg,#fbe7a8,#e7b24c 55%,#bd8a2e);color:#2a1606;font-weight:600;font-size:15px;letter-spacing:.03em;text-decoration:none;box-shadow:0 14px 36px rgba(231,178,76,.3),inset 0 1px 0 rgba(255,255,255,.55)">☎ {{ t.hero.call }}</a>
+      <button onClick="{{ openChat }}" style="display:inline-flex;align-items:center;gap:11px;padding:17px 34px;border-radius:999px;border:1px solid rgba(231,178,76,.55);background:rgba(231,178,76,.07);color:#f3d894;font-weight:500;font-size:15px;letter-spacing:.03em;cursor:pointer;backdrop-filter:blur(4px)">💬 {{ t.hero.quote }}</button>
+    </div>
+    <div style="margin-top:26px;display:flex;align-items:center;justify-content:center;gap:9px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#9c8a6e"><span style="color:#e7b24c;font-size:13px">✦</span>{{ t.hero.hint }}</div>
+  </div>
+  <div style="position:absolute;bottom:26px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;z-index:2">
+    <span style="font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#9c8a6e">{{ t.hero.scroll }}</span>
+    <span style="font-size:18px;color:#e7b24c;animation:bbBob 1.8s ease-in-out infinite">↓</span>
+  </div>
+</section>
+
+<!-- ===== ABOUT ===== -->
+<section id="about" style="position:relative;scroll-margin-top:90px;padding:clamp(70px,9vw,140px) 0;overflow:hidden">
+  <div style="position:absolute;top:-10%;left:-10%;width:60%;height:70%;background:radial-gradient(circle,color-mix(in srgb,var(--bb-accent) 30%,transparent),transparent 65%);filter:blur(20px);pointer-events:none"></div>
+  <div style="position:relative;width:min(88%,1480px);margin:0 auto">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(34px,5vw,70px);align-items:center">
+      <div style="animation:bbRise both;animation-timeline:view();animation-range:entry 2% cover 22%">
+        <div style="font-size:12px;letter-spacing:.34em;text-transform:uppercase;color:#c79a4e;margin-bottom:18px">— {{ t.about.kicker }}</div>
+        <h2 style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:clamp(30px,3.6vw,52px);line-height:1.08;margin:0;color:#f3e6cb">{{ t.about.title }}</h2>
+        <div style="margin-top:24px;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(19px,2vw,26px);color:#e0b462;line-height:1.4">{{ t.about.name }}</div>
+        <div style="font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#9c8a6e;margin-top:6px">{{ t.about.role }}</div>
+        <p style="margin-top:22px;font-size:16px;line-height:1.85;color:#cdbfa6;font-weight:300">{{ t.about.bio }}</p>
+        <div style="display:flex;flex-direction:column;gap:13px;margin-top:26px">
+          <sc-for list="{{ t.about.points }}" as="pt" hint-placeholder-count="4">
+            <div style="display:flex;align-items:flex-start;gap:13px"><span style="color:#e7b24c;font-size:14px;margin-top:3px">✦</span><span style="font-size:15px;color:#ddccae">{{ pt }}</span></div>
+          </sc-for>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:30px">
+          <sc-for list="{{ t.about.badges }}" as="bd" hint-placeholder-count="4">
+            <span style="padding:9px 16px;border:1px solid rgba(231,178,76,.26);border-radius:999px;font-size:13px;color:#e7c98a;background:rgba(231,178,76,.05)">{{ bd }}</span>
+          </sc-for>
+        </div>
+      </div>
+      <div style="position:relative;animation:bbRise both;animation-timeline:view();animation-range:entry 2% cover 26%">
+        <div style="position:relative;aspect-ratio:4/5;border-radius:8px;overflow:hidden;background:repeating-linear-gradient(135deg,#1a0c12,#1a0c12 11px,#21111a 11px,#21111a 22px);border:1px solid rgba(231,178,76,.22);box-shadow:0 30px 70px rgba(0,0,0,.55)">
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px">
+            <span style="font-size:46px;opacity:.5">👤</span>
+            <span style="font-family:'Jost',monospace;font-size:12px;letter-spacing:.16em;color:#8d7b5e">{{ t.about.imgA }}</span>
+          </div>
+        </div>
+        <div style="position:absolute;-bottom:0;bottom:-26px;left:-26px;max-width:240px;padding:22px 24px;background:linear-gradient(160deg,#1c0e08,#120a07);border:1px solid rgba(231,178,76,.3);border-radius:8px;box-shadow:0 20px 50px rgba(0,0,0,.6)">
+          <span style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;line-height:1.4;color:#eccb82">“{{ t.about.quote }}”</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SHOWCASE STRIP (2nd image zone) ===== -->
+<section style="position:relative;padding:clamp(50px,7vw,100px) 0">
+  <div style="width:min(88%,1480px);margin:0 auto">
+    <div style="position:relative;aspect-ratio:21/8;min-height:240px;border-radius:10px;overflow:hidden;background:repeating-linear-gradient(135deg,#15080d,#15080d 13px,#1d0e16 13px,#1d0e16 26px);border:1px solid rgba(231,178,76,.2);box-shadow:0 30px 80px rgba(0,0,0,.5);animation:bbRise both;animation-timeline:view();animation-range:entry 2% cover 24%">
+      <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,color-mix(in srgb,var(--bb-accent) 22%,transparent),transparent 70%)"></div>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px">
+        <span style="font-size:40px;opacity:.5">🎈</span>
+        <span style="font-family:'Jost',monospace;font-size:12px;letter-spacing:.18em;color:#9c8a6e">{{ t.about.imgB }}</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SERVICES ===== -->
+<section id="services" style="position:relative;scroll-margin-top:90px;padding:clamp(70px,9vw,140px) 0;background:linear-gradient(180deg,#08040a,#0d0612 50%,#08040a)">
+  <div style="width:min(88%,1480px);margin:0 auto">
+    <div style="text-align:center;max-width:680px;margin:0 auto;animation:bbRise both;animation-timeline:view();animation-range:entry 2% cover 22%">
+      <div style="font-size:12px;letter-spacing:.34em;text-transform:uppercase;color:#c79a4e;margin-bottom:16px">— {{ t.services.kicker }}</div>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:clamp(30px,3.8vw,54px);line-height:1.08;margin:0;color:#f3e6cb">{{ t.services.title }}</h2>
+      <p style="margin-top:18px;font-size:16px;color:#bdae92;font-weight:300">{{ t.services.intro }}</p>
+    </div>
+
+    <!-- Wedding featured -->
+    <div style="margin-top:54px;padding:clamp(26px,3.5vw,48px);border-radius:14px;background:linear-gradient(160deg,rgba(28,14,8,.85),rgba(15,8,16,.85));border:1px solid rgba(231,178,76,.22);box-shadow:0 30px 70px rgba(0,0,0,.4);animation:bbRise both;animation-timeline:view();animation-range:entry 2% cover 24%">
+      <div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap">
+        <h3 style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:clamp(26px,3vw,40px);margin:0;color:#eccb82">💍 {{ t.services.wedding.title }}</h3>
+        <span style="font-size:15px;color:#bdae92;font-weight:300">{{ t.services.wedding.desc }}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:26px;margin-top:34px">
+        <sc-for list="{{ t.services.wedding.groups }}" as="g" hint-placeholder-count="6">
+          <div style="padding-top:18px;border-top:1px solid rgba(231,178,76,.18)">
+            <h4 style="margin:0 0 14px;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:#e0b462">{{ g.title }}</h4>
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="5">
+                <div style="display:flex;align-items:center;gap:10px"><span style="width:5px;height:5px;border-radius:50%;background:#c79a4e;flex:none"></span><span style="font-size:14.5px;color:#cdbfa6">{{ it }}</span></div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="margin-top:30px;padding:16px 22px;border-radius:10px;background:rgba(231,178,76,.07);border:1px solid rgba(231,178,76,.2);font-size:15px;color:#eccb82;text-align:center">✨ {{ t.services.wedding.note }}</div>
+    </div>
+
+    <!-- Other categories -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px;margin-top:24px">
+      <sc-for list="{{ t.services.others }}" as="o" hint-placeholder-count="3">
+        <div style="padding:30px 28px;border-radius:14px;background:linear-gradient(160deg,rgba(20,10,16,.8),rgba(12,7,14,.8));border:1px solid rgba(231,178,76,.16);transition:border-color .3s,transform .3s" style-hover="border-color:rgba(231,178,76,.45);transform:translateY(-4px)">
+          <h3 style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:26px;margin:0 0 18px;color:#eccb82">{{ o.title }}</h3>
+          <div style="display:flex;flex-direction:column;gap:11px">
+            <sc-for list="{{ o.items }}" as="it" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:10px"><span style="color:#c79a4e">✦</span><span style="font-size:15px;color:#cdbfa6">{{ it }}</span></div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<!-- ===== GALLERY ===== -->
+<section id="gallery" style="scroll-margin-top:90px;padding:clamp(70px,9vw,140px) 0">
+  <div style="width:min(88%,1480px);margin:0 auto">
+    <div style="text-align:center;animation:bbRise both;animation-timeline:view();animation-range:entry 2% cover 22%">
+      <div style="font-size:12px;letter-spacing:.34em;text-transform:uppercase;color:#c79a4e;margin-bottom:16px">— {{ t.gallery.kicker }}</div>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:clamp(30px,3.8vw,54px);margin:0;color:#f3e6cb">{{ t.gallery.title }}</h2>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:34px">
+      <sc-for list="{{ galleryCats }}" as="c" hint-placeholder-count="6">
+        <button onClick="{{ c.onClick }}" style="{{ c.style }}">{{ c.label }}</button>
+      </sc-for>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:30px">
+      <sc-for list="{{ galleryItems }}" as="g" hint-placeholder-count="9">
+        <button onClick="{{ g.onClick }}" style="{{ g.style }}">
+          <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 40%,color-mix(in srgb,var(--bb-accent) 18%,transparent),transparent 72%)"></div>
+          <div style="position:absolute;top:14px;left:16px;font-family:'Cormorant Garamond',serif;font-size:30px;color:rgba(231,178,76,.4)">{{ g.num }}</div>
+          <div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:9px"><span style="font-size:30px;opacity:.55">{{ g.icon }}</span><span style="font-family:'Jost',monospace;font-size:11px;letter-spacing:.14em;color:#a8967a">{{ g.label }}</span></div>
+        </button>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PROCESS ===== -->
+<section id="process" style="scroll-margin-top:90px;padding:clamp(70px,9vw,140px) 0;background:linear-gradient(180deg,#08040a,#100614 50%,#08040a)">
+  <div style="width:min(88%,1480px);margin:0 auto">
+    <div style="text-align:center;animation:bbRise both;animation-timeline:view();animation-range:entry 2% cover 22%">
+      <div style="font-size:12px;letter-spacing:.34em;text-transform:uppercase;color:#c79a4e;margin-bottom:16px">— {{ t.process.kicker }}</div>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:clamp(30px,3.8vw,54px);margin:0;color:#f3e6cb">{{ t.process.title }}</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:18px;margin-top:50px">
+      <sc-for list="{{ processSteps }}" as="s" hint-placeholder-count="5">
+        <div style="position:relative;padding:30px 22px;border-radius:12px;background:linear-gradient(160deg,rgba(22,11,17,.8),rgba(12,7,14,.8));border:1px solid rgba(231,178,76,.16);text-align:center">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:46px;font-weight:600;background:linear-gradient(180deg,#fbe7a8,#bd8a2e);-webkit-background-clip:text;background-clip:text;color:transparent">{{ s.n }}</div>
+          <div style="font-size:24px;margin:8px 0">{{ s.icon }}</div>
+          <div style="font-size:15px;color:#ddccae;line-height:1.4">{{ s.title }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<!-- ===== WHY ===== -->
+<section id="why" style="scroll-margin-top:90px;padding:clamp(70px,9vw,140px) 0">
+  <div style="width:min(88%,1480px);margin:0 auto">
+    <div style="text-align:center;animation:bbRise both;animation-timeline:view();animation-range:entry 2% cover 22%">
+      <div style="font-size:12px;letter-spacing:.34em;text-transform:uppercase;color:#c79a4e;margin-bottom:16px">— {{ t.why.kicker }}</div>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:clamp(30px,3.8vw,54px);margin:0;color:#f3e6cb">{{ t.why.title }}</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin-top:46px">
+      <sc-for list="{{ t.why.items }}" as="w" hint-placeholder-count="6">
+        <div style="display:flex;align-items:center;gap:16px;padding:24px 26px;border-radius:12px;background:linear-gradient(160deg,rgba(22,11,17,.8),rgba(12,7,14,.8));border:1px solid rgba(231,178,76,.16)">
+          <span style="width:40px;height:40px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#fbe7a8,#bd8a2e);color:#2a1606;font-weight:700">✓</span>
+          <span style="font-size:16px;color:#e3d4b6">{{ w }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<!-- ===== REVIEWS ===== -->
+<section id="reviews" style="scroll-margin-top:90px;padding:clamp(70px,9vw,140px) 0;background:linear-gradient(180deg,#08040a,#100614 50%,#08040a)">
+  <div style="width:min(88%,1480px);margin:0 auto">
+    <div style="text-align:center;animation:bbRise both;animation-timeline:view();animation-range:entry 2% cover 22%">
+      <div style="font-size:12px;letter-spacing:.34em;text-transform:uppercase;color:#c79a4e;margin-bottom:16px">— {{ t.reviews.kicker }}</div>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:clamp(30px,3.8vw,54px);margin:0;color:#f3e6cb">{{ t.reviews.title }}</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-top:46px">
+      <sc-for list="{{ reviews }}" as="r" hint-placeholder-count="6">
+        <div style="display:flex;flex-direction:column;padding:30px 28px;border-radius:14px;background:linear-gradient(160deg,rgba(24,12,18,.85),rgba(13,8,15,.85));border:1px solid rgba(231,178,76,.18)">
+          <div style="display:flex;gap:3px">
+            <sc-for list="{{ r.starOps }}" as="op" hint-placeholder-count="5"><span style="color:#e7b24c;font-size:16px;opacity:{{ op }}">★</span></sc-for>
+            <span style="margin-left:8px;font-size:13px;color:#bdae92">{{ r.ratingText }}</span>
+          </div>
+          <p style="margin:16px 0 0;font-size:15.5px;line-height:1.7;color:#d6c7a9;font-weight:300;font-style:italic">“{{ r.text }}”</p>
+          <div style="display:flex;align-items:center;gap:13px;margin-top:auto;padding-top:22px">
+            <span style="width:46px;height:46px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(150deg,#3a1d0c,#1a0c12);border:1px solid rgba(231,178,76,.35);font-family:'Cormorant Garamond',serif;font-size:18px;color:#eccb82">{{ r.initials }}</span>
+            <div><div style="font-size:15px;color:#f0e2c5;font-weight:500">{{ r.name }}</div><div style="font-size:12.5px;color:#9c8a6e;letter-spacing:.04em">{{ r.role }}</div></div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER / CTA ===== -->
+<footer style="position:relative;padding:clamp(70px,9vw,130px) 0 50px;overflow:hidden">
+  <div style="position:absolute;inset:0;background:url('assets/nebula-bg.jpg') center/cover;opacity:.22;pointer-events:none"></div>
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,#08040a,rgba(8,4,10,.7));pointer-events:none"></div>
+  <div style="position:relative;width:min(88%,1100px);margin:0 auto;text-align:center">
+    <div style="font-size:12px;letter-spacing:.34em;text-transform:uppercase;color:#c79a4e;margin-bottom:16px">— {{ t.footer.kicker }}</div>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:clamp(28px,3.8vw,52px);line-height:1.12;margin:0 auto;max-width:20ch;color:#f3e6cb">{{ t.footer.title }}</h2>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:38px">
+      <a href="tel:+37360000000" style="display:inline-flex;align-items:center;gap:11px;padding:17px 34px;border-radius:999px;background:linear-gradient(180deg,#fbe7a8,#e7b24c 55%,#bd8a2e);color:#2a1606;font-weight:600;font-size:15px;text-decoration:none;box-shadow:0 14px 36px rgba(231,178,76,.3)">☎ {{ t.footer.phone }}</a>
+      <button onClick="{{ openChat }}" style="display:inline-flex;align-items:center;gap:11px;padding:17px 34px;border-radius:999px;border:1px solid rgba(231,178,76,.55);background:rgba(231,178,76,.07);color:#f3d894;font-weight:500;font-size:15px;cursor:pointer">💬 {{ t.hero.quote }}</button>
+    </div>
+    <div style="display:flex;gap:26px;justify-content:center;flex-wrap:wrap;margin-top:34px;font-size:14px;color:#bdae92">
+      <a href="/cdn-cgi/l/email-protection#b8d0ddd4d4d7f8dad9d4d4d7d7d6cbdacaddddc2dd96d5dc" style="color:#cdbfa6;text-decoration:none">✉ {{ t.footer.email }}</a>
+      <span>📍 {{ t.footer.cityLabel }}</span>
+      <a href="https://instagram.com" target="_blank" style="color:#cdbfa6;text-decoration:none">◎ Instagram</a>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:13px;margin-top:54px">
+      <img src="assets/logo-bb.jpg" alt="BB" style="width:54px;height:54px;object-fit:cover;border-radius:50%;mix-blend-mode:screen">
+      <span style="font-family:'Cormorant Garamond',serif;font-size:22px;letter-spacing:.2em;color:#e0c98e;text-transform:uppercase">Balloons Breeze</span>
+    </div>
+    <div style="margin-top:24px;display:flex;align-items:center;justify-content:center;gap:18px;font-size:12px;color:#6f6452">
+      <span>© 2026 {{ t.footer.brandLine }}. {{ t.footer.rights }}.</span>
+      <button onClick="{{ openAdmin }}" style="background:none;border:none;color:#6f6452;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:5px" style-hover="color:#c79a4e">🔒 {{ t.footer.admin }}</button>
+    </div>
+  </div>
+</footer>
+
+</div>
+</sc-if>
+
+<!-- ===== LIGHTBOX ===== -->
+<sc-if value="{{ lightboxOpen }}">
+<div onClick="{{ closeLightbox }}" style="position:fixed;inset:0;z-index:70;background:rgba(5,2,7,.94);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:5vw">
+  <button onClick="{{ closeLightbox }}" style="position:absolute;top:22px;right:26px;width:50px;height:50px;border-radius:50%;border:1px solid rgba(231,178,76,.4);background:rgba(20,8,14,.6);color:#f4d98f;font-size:22px;cursor:pointer">✕</button>
+  <button onClick="{{ prevL }}" style="position:absolute;left:3vw;top:50%;transform:translateY(-50%);width:54px;height:54px;border-radius:50%;border:1px solid rgba(231,178,76,.4);background:rgba(20,8,14,.6);color:#f4d98f;font-size:24px;cursor:pointer">‹</button>
+  <button onClick="{{ nextL }}" style="position:absolute;right:3vw;top:50%;transform:translateY(-50%);width:54px;height:54px;border-radius:50%;border:1px solid rgba(231,178,76,.4);background:rgba(20,8,14,.6);color:#f4d98f;font-size:24px;cursor:pointer">›</button>
+  <div onClick="{{ stop }}" style="position:relative;width:min(86vw,1000px);aspect-ratio:3/2;border-radius:12px;overflow:hidden;border:1px solid rgba(231,178,76,.3);box-shadow:0 40px 100px rgba(0,0,0,.7);background:{{ lightboxBg }}">
+    <div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--bb-accent) 24%,transparent),transparent 72%)"></div>
+    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px"><span style="font-size:64px;opacity:.5">{{ lightboxIcon }}</span><span style="font-family:'Jost',monospace;font-size:14px;letter-spacing:.18em;color:#bdae92">{{ lightboxLabel }}</span></div>
+    <div style="position:absolute;bottom:18px;left:24px;font-size:13px;letter-spacing:.1em;color:#cdbfa6">{{ lightboxCounter }}</div>
+  </div>
+</div>
+</sc-if>
+
+<!-- ===== CHAT WIDGET ===== -->
+<sc-if value="{{ showSite }}" hint-placeholder-val="{{ true }}">
+<div style="position:fixed;right:clamp(16px,3vw,30px);bottom:clamp(16px,3vw,30px);z-index:60;display:flex;flex-direction:column;align-items:flex-end;gap:14px">
+  <sc-if value="{{ chatOpen }}">
+  <div style="width:min(92vw,370px);height:min(72svh,540px);display:flex;flex-direction:column;border-radius:16px;overflow:hidden;background:linear-gradient(180deg,#140a10,#0c0710);border:1px solid rgba(231,178,76,.28);box-shadow:0 30px 80px rgba(0,0,0,.6)">
+    <div style="display:flex;align-items:center;gap:12px;padding:15px 18px;background:linear-gradient(160deg,#23120a,#15090f);border-bottom:1px solid rgba(231,178,76,.2)">
+      <img src="assets/logo-bb.jpg" alt="BB" style="width:38px;height:38px;border-radius:50%;object-fit:cover;mix-blend-mode:screen">
+      <div style="flex:1"><div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:#eccb82;letter-spacing:.04em">{{ t.chat.title }}</div><div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#8fcf9a"><span style="width:7px;height:7px;border-radius:50%;background:#5fd07a;box-shadow:0 0 8px #5fd07a"></span>{{ t.chat.online }}</div></div>
+      <button onClick="{{ closeChat }}" style="width:34px;height:34px;border-radius:9px;border:1px solid rgba(231,178,76,.25);background:transparent;color:#e7c98a;font-size:18px;cursor:pointer">—</button>
+    </div>
+    <div id="bb-chat-scroll" style="flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px">
+      <sc-for list="{{ chatMessages }}" as="m" hint-placeholder-count="1">
+        <div style="{{ m.rowStyle }}">
+          <div style="{{ m.bubbleStyle }}">{{ m.text }}<div style="font-size:10px;opacity:.5;margin-top:5px;text-align:right">{{ m.time }}</div></div>
+        </div>
+      </sc-for>
+      <div style="text-align:center;font-size:11px;color:#6f6452;margin-top:auto">{{ t.chat.hint }}</div>
+    </div>
+    <div style="display:flex;gap:9px;padding:13px;border-top:1px solid rgba(231,178,76,.18);background:rgba(8,4,10,.5)">
+      <input value="{{ draft }}" onChange="{{ onDraft }}" onKeyDown="{{ onDraftKey }}" placeholder="{{ t.chat.placeholder }}" style="flex:1;padding:13px 15px;border-radius:11px;border:1px solid rgba(231,178,76,.22);background:rgba(231,178,76,.05);color:#f1e7d6;font-size:14px;outline:none">
+      <button onClick="{{ sendVisitor }}" style="width:46px;flex:none;border-radius:11px;border:none;background:linear-gradient(180deg,#fbe7a8,#e7b24c 55%,#bd8a2e);color:#2a1606;font-size:18px;cursor:pointer">➤</button>
+    </div>
+  </div>
+  </sc-if>
+  <button onClick="{{ toggleChat }}" style="width:62px;height:62px;border-radius:50%;border:none;cursor:pointer;background:linear-gradient(180deg,#fbe7a8,#e7b24c 55%,#bd8a2e);color:#2a1606;font-size:26px;animation:bbPulse 2.6s ease-in-out infinite;display:flex;align-items:center;justify-content:center">{{ chatBtnIcon }}</button>
+</div>
+</sc-if>
+
+<!-- ===== ADMIN PANEL ===== -->
+<sc-if value="{{ showAdmin }}">
+<div style="position:fixed;inset:0;z-index:80;background:#0a0510;display:flex;flex-direction:column">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px clamp(16px,3vw,28px);background:linear-gradient(160deg,#1a0d08,#0e0712);border-bottom:1px solid rgba(231,178,76,.2)">
+    <div style="display:flex;align-items:center;gap:13px">
+      <img src="assets/logo-bb.jpg" alt="BB" style="width:42px;height:42px;border-radius:50%;object-fit:cover;mix-blend-mode:screen">
+      <div><div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#eccb82;letter-spacing:.06em">{{ t.admin.title }}</div><div style="font-size:12px;color:#9c8a6e;letter-spacing:.1em">{{ t.admin.subtitle }}</div></div>
+    </div>
+    <button onClick="{{ closeAdmin }}" style="display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:999px;border:1px solid rgba(231,178,76,.4);background:rgba(231,178,76,.06);color:#f3d894;font-size:14px;cursor:pointer">← {{ t.admin.back }}</button>
+  </div>
+  <div style="flex:1;display:flex;overflow:hidden">
+    <!-- list -->
+    <sc-if value="{{ adminShowList }}" hint-placeholder-val="{{ true }}">
+    <div style="{{ adminListStyle }}">
+      <sc-if value="{{ adminHasConvs }}">
+        <sc-for list="{{ adminConvs }}" as="c" hint-placeholder-count="1">
+          <button onClick="{{ c.onClick }}" style="{{ c.style }}">
+            <span style="width:42px;height:42px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(150deg,#3a1d0c,#1a0c12);border:1px solid rgba(231,178,76,.3);font-family:'Cormorant Garamond',serif;color:#eccb82">{{ c.initials }}</span>
+            <span style="flex:1;min-width:0;text-align:left"><span style="display:flex;justify-content:space-between;gap:8px"><span style="font-size:14px;color:#f0e2c5;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</span><span style="font-size:11px;color:#8d7b5e;flex:none">{{ c.time }}</span></span><span style="display:block;font-size:12.5px;color:#9c8a6e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px">{{ c.last }}</span></span>
+          </button>
+        </sc-for>
+      </sc-if>
+      <sc-if value="{{ adminNoConvs }}">
+        <div style="padding:50px 24px;text-align:center;color:#6f6452;font-size:14px">{{ t.admin.emptyList }}</div>
+      </sc-if>
+    </div>
+    </sc-if>
+    <!-- conversation -->
+    <sc-if value="{{ adminShowConv }}">
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+      <sc-if value="{{ adminHasActive }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;align-items:center;gap:12px;padding:15px clamp(16px,3vw,26px);border-bottom:1px solid rgba(231,178,76,.16);background:rgba(20,10,16,.5)">
+        <sc-if value="{{ isMobile }}"><button onClick="{{ adminBackToList }}" style="width:38px;height:38px;border-radius:10px;border:1px solid rgba(231,178,76,.25);background:transparent;color:#e7c98a;font-size:18px;cursor:pointer">‹</button></sc-if>
+        <span style="width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(150deg,#3a1d0c,#1a0c12);border:1px solid rgba(231,178,76,.3);font-family:'Cormorant Garamond',serif;color:#eccb82">{{ adminActiveInitials }}</span>
+        <div><div style="font-size:16px;color:#f0e2c5">{{ adminActiveName }}</div><div style="font-size:12px;color:#8fcf9a">online</div></div>
+      </div>
+      <div id="bb-admin-scroll" style="flex:1;overflow-y:auto;padding:22px clamp(16px,3vw,26px);display:flex;flex-direction:column;gap:12px;background:radial-gradient(circle at 50% 0%,rgba(40,16,28,.3),transparent 60%)">
+        <sc-for list="{{ adminMessages }}" as="m" hint-placeholder-count="1">
+          <div style="{{ m.rowStyle }}"><div style="{{ m.bubbleStyle }}">{{ m.text }}<div style="font-size:10px;opacity:.5;margin-top:5px;text-align:right">{{ m.time }}</div></div></div>
+        </sc-for>
+      </div>
+      <div style="display:flex;gap:10px;padding:15px clamp(16px,3vw,26px);border-top:1px solid rgba(231,178,76,.18);background:rgba(8,4,10,.5)">
+        <input value="{{ adminDraft }}" onChange="{{ onAdminDraft }}" onKeyDown="{{ onAdminKey }}" placeholder="{{ t.admin.replyPh }}" style="flex:1;padding:14px 16px;border-radius:11px;border:1px solid rgba(231,178,76,.22);background:rgba(231,178,76,.05);color:#f1e7d6;font-size:14px;outline:none">
+        <button onClick="{{ sendAdmin }}" style="padding:0 22px;border-radius:11px;border:none;background:linear-gradient(180deg,#fbe7a8,#e7b24c 55%,#bd8a2e);color:#2a1606;font-size:18px;cursor:pointer">➤</button>
+      </div>
+      </sc-if>
+      <sc-if value="{{ adminNoActive }}">
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;color:#6f6452;font-size:15px">{{ t.admin.empty }}</div>
+      </sc-if>
+    </div>
+    </sc-if>
+  </div>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="text/x-dc" data-dc-script data-props="{&quot;defaultLang&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;ru&quot;,&quot;ro&quot;,&quot;en&quot;],&quot;default&quot;:&quot;ru&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Conținut&quot;},&quot;balloons&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Hero&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;crimson&quot;,&quot;purple&quot;,&quot;gold-green&quot;,&quot;sakura&quot;],&quot;default&quot;:&quot;crimson&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Temă&quot;}}">
+class Component extends DCLogic {
+  T = {
+    ru: {
+      nav: { about:'О нас', services:'Услуги', gallery:'Галерея', process:'Как работаем', why:'Почему мы', reviews:'Отзывы' },
+      hero: { titleA:'Сотни деталей.', titleB:'Одна цель.', tagline:'Создать атмосферу, которую невозможно забыть.', sub:'Свадьбы · Дни рождения · Декор мероприятий · Бизнес-события', call:'Позвонить сейчас', quote:'Получить расчёт за 5 минут', scroll:'Листайте вниз', hint:'Нажмите, чтобы отпустить шары' },
+      about: { kicker:'О нас', title:'От семейного опыта к собственному бренду', name:'Alexandr Oganov', role:'Основатель · Corporation Balloons Breeze', bio:'Моё детство прошло среди свадеб, праздников и декора. Я вырос в семье организаторов мероприятий, и этот семейный опыт стал основой моего собственного пути. Создав свой бренд в Торонто, сегодня я открываю новую главу его истории в Молдове.', points:['Опыт в сфере мероприятий','Международный подход','Индивидуальная работа с каждым клиентом','Фокус на качестве, эмоциях и деталях'], badges:['🇨🇦 Опыт работы в Канаде','🇲🇩 Работаем в Молдове','Специализация на свадьбах','Дни рождения'], imgA:'ФОТО · Alexandr Oganov', imgB:'ФОТО · реализованный проект', quote:'Бренд, построенный на любви к деталям, эмоциям и незабываемым событиям.' },
+      services: { kicker:'Наши услуги', title:'От отдельных элементов — до события под ключ', intro:'Мы создаём не просто декор — мы помогаем воплотить в жизнь целое событие.', wedding: { title:'Свадьбы', desc:'Мы создаём не просто свадебный декор — мы помогаем воплотить в жизнь целое событие.', note:'Мы можем помочь организовать как отдельные элементы свадьбы, так и мероприятие под ключ.', groups:[ {title:'Декор и оформление', items:['Арки из шаров','Цветочные композиции','Оформление зала','Фотозоны','Welcome-зоны','Украшение столов','Свадебные инсталляции','Декор церемонии']}, {title:'Фото и видео', items:['Фотографы','Видеографы','Аэросъёмка (дрон)']}, {title:'Развлекательная программа', items:['Ведущий','DJ','Живая музыка','Шоу-программы','Аниматоры']}, {title:'Подготовка', items:['Визажисты','Стилисты','Свадебные координаторы']}, {title:'Организация', items:['Трансфер','Аренда автомобилей','Подбор площадки','Координация мероприятия','Составление тайминга']}, {title:'Дополнительные услуги', items:['Свадебный торт','Кейтеринг','Световое оформление','Фейерверки','Персонализированные элементы декора']} ] }, others:[ {title:'🎂 Дни рождения', items:['Детские','Взрослые','Юбилеи']}, {title:'🎉 Частные мероприятия', items:['Вечеринки']}, {title:'🏢 Корпоративные мероприятия', items:['Открытия','Презентации','Бизнес-события']} ] },
+      gallery: { kicker:'Галерея работ', title:'Каждая деталь — часть истории', cats:{ all:'Все', weddings:'Свадьбы', birthdays:'Дни рождения', photozones:'Фотозоны', arches:'Арки', corporate:'Корпоративы' } },
+      process: { kicker:'Как мы работаем', title:'Пять шагов до идеального события', steps:['Вы оставляете заявку','Мы создаём концепцию','Согласовываем бюджет','Реализуем проект','Вы наслаждаетесь событием'] },
+      why: { kicker:'Почему выбирают нас', title:'Преимущества, которые чувствуешь в деталях', items:['Индивидуальный подход','Быстрые сроки','Премиальные материалы','Современный дизайн','Международный опыт','Полная прозрачность работы'] },
+      reviews: { kicker:'Отзывы клиентов', title:'Эмоции, которые остаются', list:[ {name:'Елена и Андрей', role:'Свадьба, Кишинёв', rating:5, text:'Наша свадьба превратилась в сказку. Арка из шаров и цветов была настоящим произведением искусства. Спасибо за внимание к каждой детали!'}, {name:'Marina Crudu', role:'Юбилей', rating:5, text:'Заказывали оформление на юбилей мамы — гости были в восторге. Всё стильно, дорого и со вкусом.'}, {name:'Виктория П.', role:'Свадьба', rating:5, text:'Алекс и команда чувствуют атмосферу с полуслова. Получилось даже лучше, чем мы мечтали.'}, {name:'Sergiu și Ana', role:'Открытие шоурума', rating:5, text:'Организовали открытие нашего шоурума под ключ. Профессионально, точно в срок, без лишних вопросов.'}, {name:'Дарья Ковальчук', role:'Фотозона', rating:5, text:'Фотозона стала главным хитом вечера — все фотографии получились волшебными.'}, {name:'Cristina T.', role:'Свадьба', rating:4.5, text:'Премиальные материалы, современный дизайн и полная прозрачность. Рекомендую от всего сердца.'} ] },
+      footer: { kicker:'Свяжитесь с нами', title:'Расскажите о вашем событии — остальное мы возьмём на себя', phone:'+373 60 000 000', email:'hello@balloonsbreeze.md', cityLabel:'Молдова · Кишинёв', rights:'Все права защищены', admin:'Админ', brandLine:'Corporation Balloons Breeze' },
+      chat: { title:'Balloons Breeze', online:'на связи', greeting:'Здравствуйте! 👋 Спасибо, что заглянули к Balloons Breeze. Расскажите, какое событие вы планируете — и мы поможем подобрать идеальное решение.', placeholder:'Напишите сообщение…', hint:'Обычно отвечаем в течение нескольких минут' },
+      admin: { title:'Панель администратора', subtitle:'Чаты с клиентами', empty:'Выберите диалог, чтобы ответить', emptyList:'Пока нет диалогов', replyPh:'Ответить клиенту…', back:'На сайт', guest:'Гость' }
+    },
+    ro: {
+      nav: { about:'Despre noi', services:'Servicii', gallery:'Galerie', process:'Cum lucrăm', why:'De ce noi', reviews:'Recenzii' },
+      hero: { titleA:'Sute de detalii.', titleB:'Un singur scop.', tagline:'Să creăm o atmosferă imposibil de uitat.', sub:'Nunți · Zile de naștere · Decor evenimente · Evenimente business', call:'Sună acum', quote:'Primește o ofertă în 5 minute', scroll:'Derulează', hint:'Apasă pentru a elibera baloane' },
+      about: { kicker:'Despre noi', title:'De la experiența de familie la propriul brand', name:'Alexandr Oganov', role:'Fondator · Corporation Balloons Breeze', bio:'Copilăria mea s-a petrecut printre nunți, sărbători și decor. Am crescut într-o familie de organizatori de evenimente, iar această experiență a devenit baza propriului meu drum. După ce mi-am creat brandul la Toronto, astăzi deschid un nou capitol al poveștii lui în Moldova.', points:['Experiență în domeniul evenimentelor','Abordare internațională','Lucru individual cu fiecare client','Focus pe calitate, emoții și detalii'], badges:['🇨🇦 Experiență în Canada','🇲🇩 Lucrăm în Moldova','Specializare pe nunți','Zile de naștere'], imgA:'FOTO · Alexandr Oganov', imgB:'FOTO · proiect realizat', quote:'Un brand construit pe dragostea pentru detalii, emoții și evenimente de neuitat.' },
+      services: { kicker:'Serviciile noastre', title:'De la elemente separate — la evenimentul la cheie', intro:'Nu creăm doar decor — te ajutăm să dai viață unui eveniment întreg.', wedding: { title:'Nunți', desc:'Nu creăm doar decor de nuntă — te ajutăm să dai viață întregului eveniment.', note:'Putem organiza atât elemente separate ale nunții, cât și evenimentul la cheie.', groups:[ {title:'Decor și amenajare', items:['Arcade din baloane','Aranjamente florale','Amenajarea sălii','Foto-zone','Zone de welcome','Decorarea meselor','Instalații de nuntă','Decorul ceremoniei']}, {title:'Foto și video', items:['Fotografi','Videografi','Filmare aeriană (dronă)']}, {title:'Program de divertisment', items:['Prezentator','DJ','Muzică live','Programe de show','Animatori']}, {title:'Pregătire', items:['Make-up artiști','Styliști','Coordonatori de nuntă']}, {title:'Organizare', items:['Transfer','Închiriere auto','Alegerea locației','Coordonarea evenimentului','Întocmirea timingului']}, {title:'Servicii suplimentare', items:['Tort de nuntă','Catering','Iluminat decorativ','Artificii','Elemente de decor personalizate']} ] }, others:[ {title:'🎂 Zile de naștere', items:['Pentru copii','Pentru adulți','Aniversări']}, {title:'🎉 Evenimente private', items:['Petreceri']}, {title:'🏢 Evenimente corporate', items:['Deschideri','Prezentări','Evenimente de business']} ] },
+      gallery: { kicker:'Galerie de lucrări', title:'Fiecare detaliu — parte din poveste', cats:{ all:'Toate', weddings:'Nunți', birthdays:'Zile de naștere', photozones:'Foto-zone', arches:'Arcade', corporate:'Corporate' } },
+      process: { kicker:'Cum lucrăm', title:'Cinci pași până la evenimentul perfect', steps:['Lași o solicitare','Creăm conceptul','Stabilim bugetul','Realizăm proiectul','Te bucuri de eveniment'] },
+      why: { kicker:'De ce ne aleg', title:'Avantaje pe care le simți în detalii', items:['Abordare individuală','Termene rapide','Materiale premium','Design modern','Experiență internațională','Transparență totală'] },
+      reviews: { kicker:'Recenziile clienților', title:'Emoții care rămân', list:[ {name:'Elena și Andrei', role:'Nuntă, Chișinău', rating:5, text:'Nunta noastră s-a transformat într-o poveste. Arcada din baloane și flori a fost o adevărată operă de artă. Mulțumim pentru grija la fiecare detaliu!'}, {name:'Marina Crudu', role:'Aniversare', rating:5, text:'Am comandat amenajarea pentru aniversarea mamei — invitații au fost încântați. Totul cu stil, scump și cu gust.'}, {name:'Victoria P.', role:'Nuntă', rating:5, text:'Alex și echipa simt atmosfera din jumătate de cuvânt. A ieșit chiar mai bine decât am visat.'}, {name:'Sergiu și Ana', role:'Deschidere showroom', rating:5, text:'Au organizat deschiderea showroom-ului nostru la cheie. Profesionist, exact la timp, fără întrebări în plus.'}, {name:'Daria Kovalciuc', role:'Foto-zonă', rating:5, text:'Foto-zona a fost vedeta serii — toate pozele au ieșit magice.'}, {name:'Cristina T.', role:'Nuntă', rating:4.5, text:'Materiale premium, design modern și transparență totală. Recomand din toată inima.'} ] },
+      footer: { kicker:'Contactează-ne', title:'Spune-ne despre evenimentul tău — de rest ne ocupăm noi', phone:'+373 60 000 000', email:'hello@balloonsbreeze.md', cityLabel:'Moldova · Chișinău', rights:'Toate drepturile rezervate', admin:'Admin', brandLine:'Corporation Balloons Breeze' },
+      chat: { title:'Balloons Breeze', online:'online', greeting:'Bună ziua! 👋 Mulțumim că ai trecut pe la Balloons Breeze. Spune-ne ce eveniment plănuiești — și te ajutăm să găsim soluția perfectă.', placeholder:'Scrie un mesaj…', hint:'De obicei răspundem în câteva minute' },
+      admin: { title:'Panou administrator', subtitle:'Conversații cu clienți', empty:'Selectează o conversație pentru a răspunde', emptyList:'Nu există conversații încă', replyPh:'Răspunde clientului…', back:'Înapoi la site', guest:'Vizitator' }
+    },
+    en: {
+      nav: { about:'About', services:'Services', gallery:'Gallery', process:'Process', why:'Why us', reviews:'Reviews' },
+      hero: { titleA:'Hundreds of details.', titleB:'One goal.', tagline:'To create an atmosphere impossible to forget.', sub:'Weddings · Birthdays · Event décor · Corporate styling', call:'Call now', quote:'Get a quote in 5 minutes', scroll:'Scroll down', hint:'Tap to release balloons' },
+      about: { kicker:'About us', title:'From family heritage to our own brand', name:'Alexandr Oganov', role:'Founder · Corporation Balloons Breeze', bio:'My childhood was spent among weddings, celebrations and décor. I grew up in a family of event organizers, and that experience became the foundation of my own path. Having built my brand in Toronto, today I open a new chapter of its story in Moldova.', points:['Experience in the events industry','International approach','Individual work with every client','Focus on quality, emotion and detail'], badges:['🇨🇦 Experience in Canada','🇲🇩 Working in Moldova','Wedding specialists','Birthdays'], imgA:'PHOTO · Alexandr Oganov', imgB:'PHOTO · completed project', quote:'A brand built on a love for detail, emotion and unforgettable events.' },
+      services: { kicker:'Our services', title:'From single elements — to a turnkey event', intro:'We don\'t just create décor — we help bring an entire event to life.', wedding: { title:'Weddings', desc:'We create more than wedding décor — we help bring the whole event to life.', note:'We can arrange either individual wedding elements or the entire event turnkey.', groups:[ {title:'Décor & styling', items:['Balloon arches','Floral arrangements','Hall styling','Photo zones','Welcome zones','Table decoration','Wedding installations','Ceremony décor']}, {title:'Photo & video', items:['Photographers','Videographers','Aerial filming (drone)']}, {title:'Entertainment', items:['Host','DJ','Live music','Show programs','Animators']}, {title:'Preparation', items:['Makeup artists','Stylists','Wedding coordinators']}, {title:'Organization', items:['Transfer','Car rental','Venue selection','Event coordination','Timing planning']}, {title:'Additional services', items:['Wedding cake','Catering','Light design','Fireworks','Personalized décor elements']} ] }, others:[ {title:'🎂 Birthdays', items:['Kids','Adults','Anniversaries']}, {title:'🎉 Private events', items:['Parties']}, {title:'🏢 Corporate events', items:['Openings','Presentations','Business events']} ] },
+      gallery: { kicker:'Our work', title:'Every detail — part of the story', cats:{ all:'All', weddings:'Weddings', birthdays:'Birthdays', photozones:'Photo zones', arches:'Arches', corporate:'Corporate' } },
+      process: { kicker:'How we work', title:'Five steps to the perfect event', steps:['You leave a request','We create the concept','We agree on the budget','We bring it to life','You enjoy the event'] },
+      why: { kicker:'Why they choose us', title:'Advantages you feel in the details', items:['Individual approach','Fast turnaround','Premium materials','Modern design','International experience','Full transparency'] },
+      reviews: { kicker:'Client reviews', title:'Emotions that stay', list:[ {name:'Elena & Andrei', role:'Wedding, Chișinău', rating:5, text:'Our wedding turned into a fairytale. The balloon and flower arch was a true work of art. Thank you for the care in every detail!'}, {name:'Marina Crudu', role:'Anniversary', rating:5, text:'We ordered the décor for my mum\'s anniversary — the guests were delighted. Everything stylish, luxe and tasteful.'}, {name:'Victoria P.', role:'Wedding', rating:5, text:'Alex and the team read the mood instantly. It turned out even better than we dreamed.'}, {name:'Sergiu & Ana', role:'Showroom opening', rating:5, text:'They organized our showroom opening turnkey. Professional, right on time, no extra questions.'}, {name:'Daria Kovalciuc', role:'Photo zone', rating:5, text:'The photo zone was the highlight of the night — every shot came out magical.'}, {name:'Cristina T.', role:'Wedding', rating:4.5, text:'Premium materials, modern design and full transparency. I recommend them wholeheartedly.'} ] },
+      footer: { kicker:'Get in touch', title:'Tell us about your event — we\'ll handle the rest', phone:'+373 60 000 000', email:'hello@balloonsbreeze.md', cityLabel:'Moldova · Chișinău', rights:'All rights reserved', admin:'Admin', brandLine:'Corporation Balloons Breeze' },
+      chat: { title:'Balloons Breeze', online:'online', greeting:'Hello! 👋 Thanks for stopping by Balloons Breeze. Tell us what event you\'re planning — and we\'ll help you find the perfect solution.', placeholder:'Type a message…', hint:'We usually reply within a few minutes' },
+      admin: { title:'Admin panel', subtitle:'Client conversations', empty:'Select a conversation to reply', emptyList:'No conversations yet', replyPh:'Reply to client…', back:'Back to site', guest:'Guest' }
+    }
+  };
+
+  galleryKeys = ['weddings','arches','photozones','weddings','corporate','birthdays','arches','photozones','weddings','birthdays','corporate','weddings'];
+  catMeta = {
+    weddings:{ bg:'repeating-linear-gradient(135deg,#1b0a10,#1b0a10 12px,#240f1a 12px,#240f1a 24px)', icon:'💍' },
+    arches:{ bg:'repeating-linear-gradient(135deg,#160a14,#160a14 12px,#26102b 12px,#26102b 24px)', icon:'🎈' },
+    photozones:{ bg:'repeating-linear-gradient(135deg,#170a0a,#170a0a 12px,#2c1410 12px,#2c1410 24px)', icon:'📸' },
+    birthdays:{ bg:'repeating-linear-gradient(135deg,#0f0a16,#0f0a16 12px,#1e1230 12px,#1e1230 24px)', icon:'🎂' },
+    corporate:{ bg:'repeating-linear-gradient(135deg,#0d0a0a,#0d0a0a 12px,#231a0f 12px,#231a0f 24px)', icon:'🏢' }
+  };
+
+  state = { lang:'ru', view:'site', galleryFilter:'all', lightbox:null, chatOpen:false, draft:'', adminDraft:'', adminActive:null, adminMobileConv:false, conversations:{}, myId:null, isMobile:false, menuOpen:false, intro:true, introOut:false };
+
+  get t(){ return this.T[this.state.lang] || this.T.ru; }
+  fmt(ts){ const d=new Date(ts); return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2); }
+  initials(name){ return (name||'').split(/[\s&·]+/).filter(Boolean).slice(0,2).map(s=>s[0]).join('').toUpperCase(); }
+
+  componentDidMount(){
+    let lang = this.props.defaultLang;
+    try { const s=localStorage.getItem('bb_lang'); if(!lang && s) lang=s; } catch(e){}
+    if(!lang) lang='ru';
+    const onResize=()=>this.setState({ isMobile: window.innerWidth < 880 });
+    this._onResize=onResize; window.addEventListener('resize',onResize);
+    let myId; try{ myId=localStorage.getItem('bb_myid'); }catch(e){}
+    if(!myId){ myId='v'+Math.random().toString(36).slice(2,7); try{ localStorage.setItem('bb_myid',myId); }catch(e){} }
+    let conv={}; try{ conv=JSON.parse(localStorage.getItem('bb_conv_v1')||'{}'); }catch(e){ conv={}; }
+    this._onStorage=(e)=>{ if(e.key==='bb_conv_v1'){ try{ this.setState({ conversations: JSON.parse(e.newValue||'{}') }); setTimeout(()=>this.scrollChats(),30); }catch(_){} } };
+    window.addEventListener('storage',this._onStorage);
+    const checkHash=()=>{ if(location.hash==='#admin') this.setState({ view:'admin' }); };
+    this._onHash=checkHash; window.addEventListener('hashchange',checkHash);
+    this.setState({ lang, myId, conversations:conv, isMobile: window.innerWidth<880 });
+    this.applyAccent();
+    checkHash();
+    setTimeout(()=>this.maybeInitBalloons(),60);
+    this._introT1=setTimeout(()=>this.setState({ introOut:true }),9200);
+    this._introT2=setTimeout(()=>this.setState({ intro:false }),9850);
+  }
+  componentDidUpdate(prev){
+    if(prev.lang!==this.state.lang){ try{ localStorage.setItem('bb_lang',this.state.lang); }catch(e){} }
+    if((prev.defaultLang!==this.props.defaultLang) && this.props.defaultLang){ this.setState({ lang:this.props.defaultLang }); }
+    if(prev.accent!==this.props.accent) this.applyAccent();
+    this.maybeInitBalloons();
+  }
+  componentWillUnmount(){
+    window.removeEventListener('resize',this._onResize);
+    window.removeEventListener('storage',this._onStorage);
+    window.removeEventListener('hashchange',this._onHash);
+    if(this._raf) cancelAnimationFrame(this._raf);
+  }
+
+  applyAccent(){
+    const m={ crimson:['#b3243a','#5a0f1c'], purple:['#8a2f9e','#3a0f44'], 'gold-green':['#9aa83a','#3a3a12'], sakura:['#e090ad','#5e2336'] };
+    const a=m[this.props.accent||'crimson']||m.crimson;
+    const r=document.documentElement; r.style.setProperty('--bb-accent',a[0]); r.style.setProperty('--bb-accent-deep',a[1]);
+  }
+
+  maybeInitBalloons(){
+    if(this.props.balloons===false) return;
+    if(this.state.view!=='site') return;
+    if(this._balloonsRunning) return;
+    const c=document.getElementById('bb-balloons'); if(!c) return;
+    this.initBalloons(c);
+  }
+  initBalloons(cvs){
+    if(typeof THREE==='undefined'){ this._balloonsRunning=false; setTimeout(()=>this.maybeInitBalloons(),350); return; }
+    this._balloonsRunning=true;
+    const renderer=new THREE.WebGLRenderer({ canvas:cvs, alpha:true, antialias:true });
+    renderer.setClearColor(0x000000,0); renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));
+    const scene=new THREE.Scene(); scene.fog=new THREE.FogExp2(0x09040b,0.035);
+    const cam=new THREE.PerspectiveCamera(50,1,0.1,140); cam.position.set(0,0,17);
+    // gradient environment -> metallic reflections
+    const ec=document.createElement('canvas'); ec.width=128; ec.height=128; const g2=ec.getContext('2d');
+    const grd=g2.createLinearGradient(0,0,0,128); grd.addColorStop(0,'#2a0d10'); grd.addColorStop(0.45,'#7c4f12'); grd.addColorStop(0.62,'#f6cf72'); grd.addColorStop(0.8,'#b3243a'); grd.addColorStop(1,'#140a0e'); g2.fillStyle=grd; g2.fillRect(0,0,128,128);
+    const envTex=new THREE.CanvasTexture(ec); envTex.mapping=THREE.EquirectangularReflectionMapping;
+    let envMap=envTex; try{ const pmrem=new THREE.PMREMGenerator(renderer); envMap=pmrem.fromEquirectangular(envTex).texture; }catch(e){}
+    scene.environment=envMap;
+    scene.add(new THREE.AmbientLight(0x412022,0.7));
+    const l1=new THREE.PointLight(0xffd98a,1.4,140); l1.position.set(12,14,16); scene.add(l1);
+    const l2=new THREE.PointLight(0xc23048,1.1,140); l2.position.set(-16,-8,12); scene.add(l2);
+    const l3=new THREE.DirectionalLight(0xfff0d0,0.6); l3.position.set(-6,9,7); scene.add(l3);
+    const goldMat=new THREE.MeshStandardMaterial({ color:0xd6a23a, metalness:1, roughness:0.2, envMapIntensity:1.35 });
+    const roseMat=new THREE.MeshStandardMaterial({ color:0xb1283f, metalness:1, roughness:0.26, envMapIntensity:1.2 });
+    const sphere=new THREE.SphereGeometry(1,44,44); const knot=new THREE.ConeGeometry(0.2,0.42,18);
+    const make=(kind,unique)=>{ let m=(kind==='gold'?goldMat:roseMat); if(unique) m=m.clone(); const grp=new THREE.Group(); const body=new THREE.Mesh(sphere,m); body.scale.set(0.84,1.06,0.84); grp.add(body); const k=new THREE.Mesh(knot,m); k.position.y=-1.04; grp.add(k); return grp; };
+    const group=new THREE.Group(); scene.add(group);
+    const balloons=[]; const N=11;
+    for(let i=0;i<N;i++){ const kind=Math.random()<0.62?'gold':'rose'; const mesh=make(kind); const s=0.55+Math.random()*1.0; mesh.scale.setScalar(s); const side=Math.random()<0.5?-1:1; balloons.push({ mesh, bx:side*(3.5+Math.random()*8), y:Math.random()*26-13, z:(Math.random()-0.5)*9, sp:0.45+Math.random()*0.7, sway:Math.random()*6.28, sws:0.25+Math.random()*0.4 }); group.add(mesh); }
+    let viewH=15,viewW=15;
+    const resize=()=>{ const W=cvs.clientWidth,H=cvs.clientHeight; renderer.setSize(W,H,false); cam.aspect=W/Math.max(1,H); cam.updateProjectionMatrix(); viewH=2*Math.tan(cam.fov*Math.PI/360)*cam.position.z; viewW=viewH*cam.aspect; };
+    resize(); window.addEventListener('resize',resize);
+    let mx=0.5,my=0.5;
+    window.addEventListener('mousemove',(e)=>{ mx=e.clientX/Math.max(1,window.innerWidth); my=e.clientY/Math.max(1,window.innerHeight); });
+    window.addEventListener('scroll',()=>{ this._scroll=window.scrollY||0; const n=document.getElementById('bb-nebula'); if(n) n.style.transform='translateY('+(this._scroll*0.28)+'px) scale(1.08)'; });
+    this._spawn=(rx,ry)=>{ const cnt=4+Math.floor(Math.random()*3); for(let i=0;i<cnt;i++){ const mesh=make(Math.random()<0.6?'gold':'rose',true); const s=0.4+Math.random()*0.5; mesh.scale.setScalar(s); balloons.push({ mesh, bx:(rx-0.5)*viewW+(Math.random()-0.5)*2.4, y:(0.5-ry)*viewH, z:1+Math.random()*3, sway:Math.random()*6.28, sws:0.4+Math.random()*0.5, burst:true, vy:0.16+Math.random()*0.12, life:1 }); group.add(mesh); } };
+    let t=0;
+    const animate=()=>{
+      if(!document.body.contains(cvs)){ this._balloonsRunning=false; window.removeEventListener('resize',resize); try{ renderer.dispose(); }catch(e){} return; }
+      t+=0.016;
+      for(let i=balloons.length-1;i>=0;i--){ const b=balloons[i];
+        if(b.burst){ b.y+=b.vy; b.life-=0.006; if(b.life<=0 || b.y>viewH/2+4){ group.remove(b.mesh); balloons.splice(i,1); continue; } b.mesh.traverse(o=>{ if(o.material){ o.material.transparent=true; o.material.opacity=Math.max(0,b.life); } }); }
+        else { b.y+=0.014*b.sp; if(b.y>viewH/2+3) b.y=-viewH/2-3; }
+        b.mesh.position.set(b.bx + Math.sin(t*b.sws+b.sway)*0.7, b.y, b.z);
+        b.mesh.rotation.y += 0.004; b.mesh.rotation.z = Math.sin(t*b.sws+b.sway)*0.14;
+      }
+      group.rotation.y = (mx-0.5)*0.5; group.rotation.x = (my-0.5)*-0.22;
+      group.position.y = -(this._scroll||0)*0.012;
+      renderer.render(scene,cam);
+      this._raf=requestAnimationFrame(animate);
+    };
+    animate();
+  }
+
+  endIntro(){ if(this._introT1)clearTimeout(this._introT1); if(this._introT2)clearTimeout(this._introT2); this.setState({ introOut:true }); setTimeout(()=>this.setState({ intro:false }),600); }
+  initIntro(){
+    const cvs=document.getElementById('bb-intro-canvas'); if(!cvs) return;
+    const ctx=cvs.getContext('2d'); if(!ctx) return;
+    let W=1,H=1;
+    const resize=()=>{ const dpr=Math.min(2,window.devicePixelRatio||1); W=cvs.clientWidth;H=cvs.clientHeight;cvs.width=W*dpr;cvs.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0); };
+    resize(); window.addEventListener('resize',resize);
+    const trail=[], sparks=[]; let burst=false; const start=performance.now();
+    const dot=(x,y,r,a)=>{ const g=ctx.createRadialGradient(x,y,0,x,y,r); g.addColorStop(0,'rgba(255,246,213,'+a+')'); g.addColorStop(0.4,'rgba(234,184,79,'+(a*0.8)+')'); g.addColorStop(1,'rgba(231,178,76,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r,0,6.283); ctx.fill(); };
+    const draw=()=>{
+      if(!document.body.contains(cvs)){ window.removeEventListener('resize',resize); return; }
+      const el=(performance.now()-start)/1000;
+      ctx.clearRect(0,0,W,H); ctx.globalCompositeOperation='lighter';
+      const cx=W/2, cy=H*0.46;
+      if(el<1.55){ const p=el/1.55; const ang=p*Math.PI*4.4; const rad=(1-p)*Math.min(W,H)*0.44+5; trail.push({ x:cx+Math.cos(ang)*rad, y:cy+Math.sin(ang)*rad*0.82, a:1 }); }
+      if(el>=1.5 && !burst){ burst=true; for(let i=0;i<110;i++){ const a=Math.random()*6.283, sp=1+Math.random()*6; sparks.push({ x:cx, y:cy, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp, a:1, r:1+Math.random()*2.2 }); } }
+      for(let i=trail.length-1;i>=0;i--){ const s=trail[i]; s.a-=0.028; if(s.a<=0){ trail.splice(i,1); continue; } dot(s.x,s.y,(2+s.a*3)*3,s.a*0.9); }
+      if(trail.length){ const h=trail[trail.length-1]; dot(h.x,h.y,16,1); }
+      for(let i=sparks.length-1;i>=0;i--){ const s=sparks[i]; s.x+=s.vx;s.y+=s.vy;s.vx*=0.95;s.vy*=0.95;s.a-=0.012; if(s.a<=0){ sparks.splice(i,1); continue; } dot(s.x,s.y,s.r*5,s.a); }
+      ctx.globalCompositeOperation='source-over';
+      this._introRaf=requestAnimationFrame(draw);
+    };
+    draw();
+  }
+  setLang(code){ this.setState({ lang:code, menuOpen:false }); }
+  toggleMenu(){ this.setState(s=>({ menuOpen:!s.menuOpen })); }
+  closeMenu(){ this.setState({ menuOpen:false }); }
+  setFilter(k){ this.setState({ galleryFilter:k }); }
+
+  filtered(){
+    const f=this.state.galleryFilter;
+    return this.galleryKeys.map((k,i)=>({k,i})).filter(o=> f==='all' ? true : o.k===f );
+  }
+  openLightbox(idx){ this.setState({ lightbox:idx }); }
+  closeLightbox(){ this.setState({ lightbox:null }); }
+  nextL(){ const n=this.filtered().length; this.setState(s=>({ lightbox:(s.lightbox+1)%n })); }
+  prevL(){ const n=this.filtered().length; this.setState(s=>({ lightbox:(s.lightbox-1+n)%n })); }
+
+  scrollChats(){ const a=document.getElementById('bb-chat-scroll'); if(a) a.scrollTop=a.scrollHeight; const b=document.getElementById('bb-admin-scroll'); if(b) b.scrollTop=b.scrollHeight; }
+
+  ensureConv(){
+    const { myId } = this.state; const conv={ ...this.state.conversations };
+    if(!conv[myId]){
+      conv[myId] = { id:myId, name: this.t.admin.guest+' · '+myId.slice(1).toUpperCase(), messages:[{ from:'operator', text:this.t.chat.greeting, ts:Date.now(), auto:true }], ts:Date.now() };
+      this.setState({ conversations:conv }); this.persist(conv);
+    }
+    return conv;
+  }
+  persist(conv){ try{ localStorage.setItem('bb_conv_v1', JSON.stringify(conv)); }catch(e){} }
+  openChat(){ this.setState({ chatOpen:true }); this.ensureConv(); setTimeout(()=>this.scrollChats(),50); }
+  closeChat(){ this.setState({ chatOpen:false }); }
+  toggleChat(){ if(this.state.chatOpen){ this.closeChat(); } else { this.openChat(); } }
+  onDraft(e){ this.setState({ draft:e.target.value }); }
+  onDraftKey(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); this.sendVisitor(); } }
+  sendVisitor(){
+    const txt=(this.state.draft||'').trim(); if(!txt) return;
+    const { myId } = this.state; const conv=this.ensureConv(); const c={ ...conv[myId] };
+    c.messages=[...c.messages,{ from:'visitor', text:txt, ts:Date.now() }]; c.ts=Date.now();
+    const nc={ ...conv, [myId]:c };
+    this.setState({ conversations:nc, draft:'' }); this.persist(nc);
+    setTimeout(()=>this.scrollChats(),40);
+  }
+
+  openAdmin(){ this.setState({ view:'admin', menuOpen:false }); }
+  closeAdmin(){ this.setState({ view:'site' }); if(location.hash==='#admin'){ try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){} } }
+  selectConv(id){ this.setState({ adminActive:id, adminMobileConv:true }); setTimeout(()=>this.scrollChats(),50); }
+  adminBackToList(){ this.setState({ adminMobileConv:false }); }
+  onAdminDraft(e){ this.setState({ adminDraft:e.target.value }); }
+  onAdminKey(e){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); this.sendAdmin(); } }
+  sendAdmin(){
+    const txt=(this.state.adminDraft||'').trim(); const id=this.state.adminActive; if(!txt||!id) return;
+    const conv={ ...this.state.conversations }; const c={ ...conv[id] };
+    c.messages=[...c.messages,{ from:'operator', text:txt, ts:Date.now() }]; c.ts=Date.now();
+    conv[id]=c;
+    this.setState({ conversations:conv, adminDraft:'' }); this.persist(conv);
+    setTimeout(()=>this.scrollChats(),40);
+  }
+
+  renderVals(){
+    const t=this.t, st=this.state, isMobile=st.isMobile;
+    const introBalloons=Array.from({length:14}).map((_,i)=>{ const a=(-Math.PI/2)+(i/14)*Math.PI*2; const R=57; const left=50+Math.cos(a)*R; const top=50+Math.sin(a)*R; const gold=i%2===0; const sz=13+(i%3)*6; const col=gold?'radial-gradient(circle at 35% 30%,#fff3c4,#eab84f 45%,#9a6a1e)':'radial-gradient(circle at 35% 30%,#ffd0c0,#b1283f 45%,#5e0f1c)'; return { style:'position:absolute;left:'+left.toFixed(1)+'%;top:'+top.toFixed(1)+'%;width:'+sz+'px;height:'+Math.round(sz*1.22)+'px;border-radius:50%;background:'+col+';box-shadow:0 0 12px rgba(231,178,76,.35);transform:translate(-50%,-50%) scale(0);animation:bbPop .7s cubic-bezier(.2,1.3,.4,1) both;animation-delay:'+(2.3+i*0.045).toFixed(2)+'s' }; });
+    const langBtn=(code)=>({ code, label:code.toUpperCase(), onClick:()=>this.setLang(code), style:'padding:7px 12px;border-radius:999px;border:none;cursor:pointer;font-size:12px;font-weight:600;letter-spacing:.08em;'+(st.lang===code?'background:linear-gradient(180deg,#fbe7a8,#bd8a2e);color:#2a1606':'background:transparent;color:#b6a684') });
+    const navLinks=[ {href:'#about',label:t.nav.about},{href:'#services',label:t.nav.services},{href:'#gallery',label:t.nav.gallery},{href:'#process',label:t.nav.process},{href:'#why',label:t.nav.why},{href:'#reviews',label:t.nav.reviews} ];
+    const catKeys=['all','weddings','birthdays','photozones','arches','corporate'];
+    const galleryCats=catKeys.map(k=>({ key:k, label:t.gallery.cats[k], onClick:()=>this.setFilter(k), style:'padding:10px 20px;border-radius:999px;cursor:pointer;font-size:13.5px;letter-spacing:.03em;transition:all .25s;'+(st.galleryFilter===k?'border:1px solid rgba(231,178,76,.6);background:linear-gradient(180deg,rgba(251,231,168,.16),rgba(189,138,46,.1));color:#f4d98f':'border:1px solid rgba(231,178,76,.2);background:transparent;color:#bdae92') }));
+    const fl=this.filtered();
+    const galleryItems=fl.map((o,pos)=>{ const meta=this.catMeta[o.k]; return { key:o.k, label:t.gallery.cats[o.k], icon:meta.icon, num:('0'+(pos+1)).slice(-2), onClick:()=>this.openLightbox(pos), style:'position:relative;aspect-ratio:4/3;border:1px solid rgba(231,178,76,.16);border-radius:10px;overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;background:'+meta.bg+';transition:transform .3s,border-color .3s' }; });
+    const reviews=t.reviews.list.map(r=>({ ...r, initials:this.initials(r.name), ratingText:r.rating.toFixed(1), starOps:[1,1,1,1, r.rating>=5?1:0.3] }));
+    const processSteps=t.process.steps.map((title,i)=>({ n:('0'+(i+1)).slice(-2), title, icon:['📞','🎨','💬','🎈','✨'][i] }));
+
+    // lightbox
+    const lbOpen = st.lightbox!==null && fl[st.lightbox];
+    let lightboxBg='#160a10', lightboxLabel='', lightboxIcon='', lightboxCounter='';
+    if(lbOpen){ const it=fl[st.lightbox]; const m=this.catMeta[it.k]; lightboxBg=m.bg; lightboxIcon=m.icon; lightboxLabel=t.gallery.cats[it.k]; lightboxCounter=(st.lightbox+1)+' / '+fl.length; }
+
+    // visitor chat
+    const myConv = st.conversations[st.myId];
+    const bubbleBase='max-width:80%;padding:11px 14px;border-radius:14px;font-size:14px;line-height:1.5;';
+    const chatMessages=(myConv?myConv.messages:[]).map(m=>{ const mine=m.from==='visitor'; return { text:m.text, time:this.fmt(m.ts), rowStyle:'display:flex;'+(mine?'justify-content:flex-end':'justify-content:flex-start'), bubbleStyle:bubbleBase+(mine?'background:linear-gradient(180deg,#fbe7a8,#d9a341);color:#2a1606;border-bottom-right-radius:4px':'background:rgba(231,178,76,.1);color:#ecdcb8;border:1px solid rgba(231,178,76,.18);border-bottom-left-radius:4px') }; });
+    const chatBtnIcon = st.chatOpen ? '✕' : '💬';
+
+    // admin
+    const convArr=Object.values(st.conversations).sort((a,b)=>(b.ts||0)-(a.ts||0));
+    const adminConvs=convArr.map(c=>{ const last=c.messages.length?c.messages[c.messages.length-1]:null; const active=c.id===st.adminActive; return { id:c.id, name:c.name, initials:this.initials(c.name), last:last?last.text:'', time:last?this.fmt(last.ts):'', onClick:()=>this.selectConv(c.id), style:'display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;border:none;border-bottom:1px solid rgba(231,178,76,.08);cursor:pointer;text-align:left;'+(active?'background:linear-gradient(90deg,rgba(231,178,76,.14),transparent)':'background:transparent') }; });
+    const activeConv=st.conversations[st.adminActive];
+    const adminMessages=(activeConv?activeConv.messages:[]).map(m=>{ const mine=m.from==='operator'; return { text:m.text, time:this.fmt(m.ts), rowStyle:'display:flex;'+(mine?'justify-content:flex-end':'justify-content:flex-start'), bubbleStyle:bubbleBase+(mine?'background:linear-gradient(180deg,#fbe7a8,#d9a341);color:#2a1606;border-bottom-right-radius:4px':'background:rgba(231,178,76,.1);color:#ecdcb8;border:1px solid rgba(231,178,76,.18);border-bottom-left-radius:4px') }; });
+    const hasConvs=convArr.length>0;
+    const adminShowList = !isMobile || !st.adminMobileConv;
+    const adminShowConv = !isMobile || st.adminMobileConv;
+    const adminListStyle = (isMobile?'width:100%;':'width:340px;flex:none;border-right:1px solid rgba(231,178,76,.14);')+'overflow-y:auto;background:rgba(12,7,14,.6)';
+
+    return {
+      t, lang:st.lang, isMobile, isDesktop:!isMobile, menuOpen:st.menuOpen,
+      showSite: st.view!=='admin', showAdmin: st.view==='admin',
+      intro: st.intro, introOpacity: st.introOut?0:1, endIntro:()=>this.endIntro(), introSkip: ({ru:'Пропустить',ro:'Sări peste',en:'Skip'})[st.lang]||'Skip', introBalloons,
+      langs:[langBtn('ru'),langBtn('ro'),langBtn('en')], navLinks,
+      toggleMenu:()=>this.toggleMenu(), closeMenu:()=>this.closeMenu(),
+      heroClick:(e)=>{ if(!this._spawn) return; const c=document.getElementById('bb-balloons'); if(!c) return; const r=c.getBoundingClientRect(); this._spawn((e.clientX-r.left)/Math.max(1,r.width),(e.clientY-r.top)/Math.max(1,r.height)); },
+      galleryCats, galleryItems, reviews, processSteps,
+      lightboxOpen:!!lbOpen, lightboxBg, lightboxLabel, lightboxIcon, lightboxCounter,
+      closeLightbox:()=>this.closeLightbox(), nextL:()=>this.nextL(), prevL:()=>this.prevL(), stop:(e)=>{ e.stopPropagation(); },
+      openChat:()=>this.openChat(), closeChat:()=>this.closeChat(), toggleChat:()=>this.toggleChat(),
+      chatMessages, draft:st.draft, onDraft:(e)=>this.onDraft(e), onDraftKey:(e)=>this.onDraftKey(e), sendVisitor:()=>this.sendVisitor(), chatBtnIcon,
+      openAdmin:()=>this.openAdmin(), closeAdmin:()=>this.closeAdmin(),
+      adminConvs, adminMessages, adminDraft:st.adminDraft, onAdminDraft:(e)=>this.onAdminDraft(e), onAdminKey:(e)=>this.onAdminKey(e), sendAdmin:()=>this.sendAdmin(),
+      adminBackToList:()=>this.adminBackToList(),
+      adminHasConvs:hasConvs, adminNoConvs:!hasConvs,
+      adminShowList, adminShowConv, adminListStyle,
+      adminHasActive: !!activeConv, adminNoActive: !activeConv,
+      adminActiveName: activeConv?activeConv.name:'', adminActiveInitials: activeConv?this.initials(activeConv.name):''
+    };
+  }
+}
+</script>
+</body>
+</html>
