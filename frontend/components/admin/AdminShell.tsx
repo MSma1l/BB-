@@ -13,22 +13,25 @@ import PhotosSection from "@/components/admin/PhotosSection";
 
 type Section = "messages" | "photos";
 
-/** Count visitor messages across all threads — the "new message" signal. */
-function visitorStats(): { count: number; latestName: string } {
-  let count = 0;
+/**
+ * The "new customer activity" signal. Counts every conversation *and* every
+ * visitor message, so both a freshly-created thread (intake form submitted,
+ * only the operator greeting so far) and a new incoming message bump the total.
+ * `latestName` is whoever was most recently active (max last-activity ts).
+ */
+function activityStats(): { count: number; latestName: string } {
+  const convs = loadConversations();
+  let messages = 0;
   let latestTs = -1;
   let latestName = "";
-  for (const c of loadConversations()) {
-    for (const m of c.messages) {
-      if (m.from !== "visitor") continue;
-      count++;
-      if (m.ts > latestTs) {
-        latestTs = m.ts;
-        latestName = `${c.first} ${c.last}`;
-      }
+  for (const c of convs) {
+    for (const m of c.messages) if (m.from === "visitor") messages++;
+    if (c.ts > latestTs) {
+      latestTs = c.ts;
+      latestName = `${c.first} ${c.last}`;
     }
   }
-  return { count, latestName };
+  return { count: convs.length + messages, latestName };
 }
 
 /** The admin dashboard: header controls + a section menu + the active section. */
@@ -46,11 +49,11 @@ export default function AdminShell({ onLogout }: { onLogout: () => void }) {
   const seenCount = useRef<number | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Watch the shared store; a rise in the visitor-message count means a new
-  // customer message just arrived (possibly from the customer's own tab).
+  // Watch the shared store; a rise in the activity count means a new customer
+  // thread or message just arrived (possibly from the customer's own tab).
   useEffect(() => {
     const check = () => {
-      const { count, latestName } = visitorStats();
+      const { count, latestName } = activityStats();
       if (seenCount.current === null) {
         seenCount.current = count; // baseline; don't announce existing history
         return;
