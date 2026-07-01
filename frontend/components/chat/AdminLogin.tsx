@@ -7,7 +7,7 @@ import { useT } from "@/lib/i18n";
 import { login } from "@/lib/auth";
 import LangSwitch from "@/components/ui/LangSwitch";
 
-/** Login gate for the /admin route. Calls lib/auth.login() (backend swap point). */
+/** Login gate for the /admin-bb route. Calls lib/auth.login() (backend swap point). */
 export default function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
   const t = useT();
   const [username, setUsername] = useState("");
@@ -32,9 +32,13 @@ export default function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
 
   return (
     <div
-      className="flex min-h-dvh flex-col items-center justify-center px-6"
+      className="relative flex min-h-dvh flex-col items-center justify-center px-6"
       style={{ background: "#0a0510" }}
     >
+      <div className="absolute right-[clamp(16px,3vw,28px)] top-[clamp(16px,3vw,24px)]">
+        <LangSwitch />
+      </div>
+
       <form
         onSubmit={submit}
         className="flex w-full max-w-[360px] flex-col gap-3 rounded-[16px] p-7"
@@ -44,21 +48,18 @@ export default function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
           boxShadow: "0 30px 80px rgba(0,0,0,.6)",
         }}
       >
-        <div className="mb-1 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <Image
-              src="/assets/logo-bb.jpg"
-              alt="BB"
-              width={42}
-              height={42}
-              className="h-[42px] w-[42px] rounded-full object-cover"
-              style={{ mixBlendMode: "screen" }}
-            />
-            <div className="font-display text-[20px] leading-tight tracking-[0.04em] text-gold-300">
-              {t.admin.loginTitle}
-            </div>
+        <div className="mb-1 flex items-center gap-3">
+          <Image
+            src="/assets/logo-bb.jpg"
+            alt="BB"
+            width={42}
+            height={42}
+            className="h-[42px] w-[42px] rounded-full object-cover"
+            style={{ mixBlendMode: "screen" }}
+          />
+          <div className="font-display text-[20px] leading-tight tracking-[0.04em] text-gold-300">
+            {t.admin.loginTitle}
           </div>
-          <LangSwitch />
         </div>
 
         <input

@@ -15,7 +15,7 @@ import type { BurstSignal } from "@/lib/types";
  * global balloon background's click-to-burst signal. Hero/Footer buttons call
  * openChat(); ChatWidget reads the flag. The balloon background reads
  * `burstRef`, which `triggerBurst` mutates on click. (The admin panel now lives
- * on its own /admin route, so it no longer uses this context.)
+ * on its own /admin-bb route, so it no longer uses this context.)
  */
 interface UIContextValue {
   chatOpen: boolean;

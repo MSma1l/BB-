@@ -6,7 +6,7 @@ import AdminShell from "@/components/admin/AdminShell";
 import { isAuthed, logout } from "@/lib/auth";
 
 /**
- * /admin — login-gated admin route. The credential check is client-side and
+ * /admin-bb — login-gated admin route. The credential check is client-side and
  * temporary (see lib/auth.ts); a backend will replace it with real auth.
  */
 export default function AdminRoute() {
