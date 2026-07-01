@@ -22,6 +22,9 @@ interface Contact {
   phone: string;
 }
 
+type FormState = Contact & { message: string };
+type FieldErrors = Partial<Record<keyof FormState, boolean>>;
+
 /** Personalized welcome: "Hello, {first} {last}! 👋 …". */
 function buildGreeting(t: Dictionary, c: Contact | null): string {
   const who = c ? `, ${c.first} ${c.last}` : "";
@@ -32,7 +35,9 @@ export default function ChatWidget() {
   const t = useT();
   const { chatOpen, toggleChat, closeChat } = useUI();
   const [contact, setContact] = useState<Contact | null>(null);
-  const [form, setForm] = useState<Contact>({ first: "", last: "", phone: "" });
+  const [form, setForm] = useState<FormState>({ first: "", last: "", phone: "", message: "" });
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [sent, setSent] = useState(false);
   const [draft, setDraft] = useState("");
   const [convId, setConvId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -64,6 +69,12 @@ export default function ChatWidget() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
   }, [messages, chatOpen, contact]);
 
+  // Clear a field's error as the visitor edits it.
+  const setField = (key: keyof FormState, value: string) => {
+    setForm((f) => ({ ...f, [key]: value }));
+    setErrors((er) => (er[key] ? { ...er, [key]: false } : er));
+  };
+
   const submitContact = (e: React.FormEvent) => {
     e.preventDefault();
     const c: Contact = {
@@ -71,20 +82,39 @@ export default function ChatWidget() {
       last: form.last.trim(),
       phone: form.phone.trim(),
     };
-    if (!c.first || !c.last || !c.phone) return;
+    const message = form.message.trim();
+    // Validate required fields; show per-field errors instead of silently blocking.
+    const errs: FieldErrors = {
+      first: !c.first,
+      last: !c.last,
+      phone: !c.phone,
+      message: !message,
+    };
+    if (errs.first || errs.last || errs.phone || errs.message) {
+      setErrors(errs);
+      return;
+    }
+
     const now = Date.now();
     const id = `c${now}`;
-    // Seed the thread with the personalized operator greeting, then publish it
-    // to the shared store where the admin inbox picks it up immediately.
+    // Send name + surname + message together: the personalized greeting plus the
+    // visitor's first message, published to the shared store for the admin inbox.
     addConversation({
       id,
       ...c,
       ts: now,
-      messages: [{ id: "greet", from: "operator", text: buildGreeting(t, c), ts: now }],
+      messages: [
+        { id: "greet", from: "operator", text: buildGreeting(t, c), ts: now },
+        { id: `v${now}`, from: "visitor", text: message, ts: now },
+      ],
     });
     setMyConversationId(id);
     setConvId(id);
     setContact(c);
+    setErrors({});
+    setForm({ first: "", last: "", phone: "", message: "" });
+    setSent(true); // confirmation
+    window.setTimeout(() => setSent(false), 4000);
   };
 
   const send = () => {
@@ -94,12 +124,14 @@ export default function ChatWidget() {
     setDraft("");
   };
 
-  const formValid =
-    form.first.trim() && form.last.trim() && form.phone.trim();
-
   const inputStyle = {
     border: "1px solid rgba(231,178,76,.22)",
     background: "rgba(231,178,76,.05)",
+  } as const;
+
+  const errorInputStyle = {
+    border: "1px solid rgba(224,114,138,.7)",
+    background: "rgba(224,114,138,.06)",
   } as const;
 
   return (
@@ -162,34 +194,57 @@ export default function ChatWidget() {
               <div className="font-display text-[20px] text-gold-300">
                 {t.chat.formTitle}
               </div>
-              <input
-                value={form.first}
-                onChange={(e) => setForm((f) => ({ ...f, first: e.target.value }))}
-                placeholder={t.chat.namePh}
-                autoFocus
-                className="rounded-[11px] px-[15px] py-[13px] text-[14px] text-cream outline-none"
-                style={inputStyle}
-              />
-              <input
-                value={form.last}
-                onChange={(e) => setForm((f) => ({ ...f, last: e.target.value }))}
-                placeholder={t.chat.surnamePh}
-                className="rounded-[11px] px-[15px] py-[13px] text-[14px] text-cream outline-none"
-                style={inputStyle}
-              />
-              <input
-                value={form.phone}
-                onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-                placeholder={t.chat.phonePh}
-                type="tel"
-                inputMode="tel"
-                className="rounded-[11px] px-[15px] py-[13px] text-[14px] text-cream outline-none"
-                style={inputStyle}
-              />
+              <div className="flex flex-col gap-1">
+                <input
+                  value={form.first}
+                  onChange={(e) => setField("first", e.target.value)}
+                  placeholder={t.chat.namePh}
+                  autoFocus
+                  aria-invalid={errors.first ? true : undefined}
+                  className="rounded-[11px] px-[15px] py-[13px] text-[14px] text-cream outline-none"
+                  style={errors.first ? errorInputStyle : inputStyle}
+                />
+                {errors.first ? <FieldError>{t.chat.errName}</FieldError> : null}
+              </div>
+              <div className="flex flex-col gap-1">
+                <input
+                  value={form.last}
+                  onChange={(e) => setField("last", e.target.value)}
+                  placeholder={t.chat.surnamePh}
+                  aria-invalid={errors.last ? true : undefined}
+                  className="rounded-[11px] px-[15px] py-[13px] text-[14px] text-cream outline-none"
+                  style={errors.last ? errorInputStyle : inputStyle}
+                />
+                {errors.last ? <FieldError>{t.chat.errSurname}</FieldError> : null}
+              </div>
+              <div className="flex flex-col gap-1">
+                <input
+                  value={form.phone}
+                  onChange={(e) => setField("phone", e.target.value)}
+                  placeholder={t.chat.phonePh}
+                  type="tel"
+                  inputMode="tel"
+                  aria-invalid={errors.phone ? true : undefined}
+                  className="rounded-[11px] px-[15px] py-[13px] text-[14px] text-cream outline-none"
+                  style={errors.phone ? errorInputStyle : inputStyle}
+                />
+                {errors.phone ? <FieldError>{t.chat.errPhone}</FieldError> : null}
+              </div>
+              <div className="flex flex-col gap-1">
+                <textarea
+                  value={form.message}
+                  onChange={(e) => setField("message", e.target.value)}
+                  placeholder={t.chat.messagePh}
+                  rows={3}
+                  aria-invalid={errors.message ? true : undefined}
+                  className="resize-none rounded-[11px] px-[15px] py-[13px] text-[14px] text-cream outline-none"
+                  style={errors.message ? errorInputStyle : inputStyle}
+                />
+                {errors.message ? <FieldError>{t.chat.errMessage}</FieldError> : null}
+              </div>
               <button
                 type="submit"
-                disabled={!formValid}
-                className="mt-1 rounded-[11px] border-none py-[13px] text-[15px] font-semibold bb-gold-btn disabled:cursor-not-allowed disabled:opacity-50"
+                className="mt-1 rounded-[11px] border-none py-[13px] text-[15px] font-semibold bb-gold-btn"
                 style={{ boxShadow: "none" }}
               >
                 {t.chat.start}
@@ -198,6 +253,16 @@ export default function ChatWidget() {
             </form>
           ) : (
             <>
+              {/* send confirmation */}
+              {sent ? (
+                <div
+                  className="px-[18px] py-2.5 text-center text-[13px] text-gold-200"
+                  style={{ background: "rgba(95,208,122,.12)", borderBottom: "1px solid rgba(95,208,122,.35)" }}
+                >
+                  ✓ {t.chat.sent}
+                </div>
+              ) : null}
+
               {/* messages */}
               <div ref={scrollRef} className="flex flex-1 flex-col gap-3 overflow-y-auto p-[18px]">
                 {messages.map((m) => (
@@ -247,6 +312,14 @@ export default function ChatWidget() {
         {chatOpen ? <X size={26} /> : <MessageCircle size={26} />}
       </button>
     </div>
+  );
+}
+
+function FieldError({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="px-1 text-[12px]" style={{ color: "#e0728a" }}>
+      {children}
+    </span>
   );
 }
 

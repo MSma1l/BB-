@@ -188,7 +188,14 @@ export interface Dictionary {
     namePh: string;
     surnamePh: string;
     phonePh: string;
+    messagePh: string;
     start: string;
+    /** Send confirmation + per-field validation errors. */
+    sent: string;
+    errName: string;
+    errSurname: string;
+    errPhone: string;
+    errMessage: string;
   };
   admin: {
     title: string;
