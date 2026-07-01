@@ -150,6 +150,19 @@ Beyond chat, three more stores back live-editable content, all following the sam
 - Fonts: **Cormorant Garamond** (display/serif headings) + **Jost** (body), via `next/font`.
 - Animations: prefer **Framer Motion**; keep CSS `@keyframes` only for tiny ambient loops
   (e.g. balloon bob, button pulse).
+- **Responsive / mobile compaction (⚠️ desktop is frozen).** The desktop layout is
+  considered final — mobile tweaks must **not** change anything at `≥768px`. Two
+  desktop-safe levers are used, and any future spacing change should follow them:
+  1. **Lower only the `min` of a `clamp()`.** Section paddings/gaps use
+     `clamp(min, Xvw, max)`. At desktop widths the value sits on the `vw`/`max` term,
+     so the `min` only engages on narrow screens (e.g. `clamp(38px,9vw,140px)` → the
+     `38px` only applies below ~778px). Never lower the `vw` or `max` term.
+  2. **`md:` overrides restore desktop exactly.** For fixed Tailwind spacing/grids,
+     the mobile-first base value is the compact one and the `md:` variant repeats the
+     *original* value (`mt-8 md:mt-[50px]`, `grid-cols-2
+     md:[grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]`). So `<768px`
+     gets tighter spacing / 2-up card grids (gallery, process, services) while
+     `≥768px` is byte-for-byte unchanged. The Hero is left untouched (it's `100svh`).
 
 ---
 
@@ -168,6 +181,14 @@ Beyond chat, three more stores back live-editable content, all following the sam
 
 Append one line per non-obvious decision. Newest at top.
 
+- **Mobile compacted without touching desktop.** The desktop layout was signed off as
+  final, so the mobile pass only shortens small screens via two provably desktop-safe
+  levers (see §5): lowering `clamp()` **minimums** (desktop sits on the `vw`/`max` term)
+  and adding `md:` overrides that restore the exact current value at `≥768px` (incl.
+  2-up card grids for the gallery, process steps, and services). Verified with headless
+  Chrome: desktop (1440px) total + every section height stayed byte-identical (7531px)
+  while mobile (390px) dropped ~27% (10710→7830px). **Don't "simplify" these back into
+  single unprefixed values — that would change desktop.**
 - **Admin moved to its own `/admin-bb` route, behind a temporary client-side login**
   (`lib/auth.ts`). Static/no-backend means any client check is deterrence, not
   security — so `login()` is the documented swap point for real backend auth, and

@@ -30,6 +30,11 @@ next/font, and a **client-side React context for i18n** (RU/RO/EN). Full rationa
   **CMS** (messages / photos / texts), visitor-submitted reviews, and trilingual
   i18n are implemented. `npm run build` produces a clean static export to
   `frontend/out/`, verified visually (desktop + mobile, RU/RO).
+- ✅ **Mobile compaction pass** (branch `mobile-responsive`): small screens are
+  ~27% shorter (tighter section spacing + 2-up card grids for gallery / process /
+  services) while the **desktop layout is provably unchanged** (see the
+  desktop-frozen convention in `ARCHITECTURE.md §5` — do not collapse the
+  `clamp()` mins or `md:` overrides back to single values).
 
 **The site is feature-complete as a frontend. Next work is real content (final
 curated gallery photos + real contact details) and the backend handoff (replace
