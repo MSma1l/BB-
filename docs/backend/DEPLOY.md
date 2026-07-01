@@ -309,4 +309,63 @@ without it — set `JWT_SECRET` in `.env` and restart.
 
 ---
 
+## Real-world deploy: behind a shared containerized nginx (balloonsbreeze.md)
+
+The production server (`turcan-ivan`) does **not** use a host nginx. It runs a
+containerized reverse proxy **`nginx_proxy`** (project `/root/nginx-proxy`,
+publishes `:80`/`:443`) that fronts every site. Apps join the external Docker
+network **`shared-network`**; the proxy routes to them **by container name**. So
+this deploy uses `docker-compose.server.yml` (not the host-nginx flow above):
+
+- **Config files:** host `/root/nginx-proxy/conf.d/*.conf` (bind-mounted) → add a
+  file + `docker exec nginx_proxy nginx -t && docker exec nginx_proxy nginx -s reload`.
+- **Certs:** host `/etc/letsencrypt` mounted into the proxy. **ACME webroot:**
+  `/root/nginx-proxy/certbot/www` → `/var/www/certbot`.
+- The BB vhost is `deploy/nginx-proxy-balloonsbreeze.conf` (points `proxy_pass` at
+  `http://balloonsbreeze-web:80` via `resolver 127.0.0.11`).
+
+### Bring-up (on the server)
+```bash
+cd /root/BB-
+docker compose down                                       # if a base stack is up
+docker compose -f docker-compose.server.yml up -d --build # web → shared-network, no host port
+```
+
+### Issue the cert (certbot runs as a one-off container; certbot is not on host)
+```bash
+# First: temporary HTTP-only vhost so ACME works, reload, then:
+docker run --rm -v /etc/letsencrypt:/etc/letsencrypt -v /root/nginx-proxy/certbot/www:/var/www/certbot \
+  certbot/certbot certonly --webroot -w /var/www/certbot \
+  -d balloonsbreeze.md -d www.balloonsbreeze.md --email balloonsbreeze@gmail.com --agree-tos --no-eff-email
+cp /root/BB-/deploy/nginx-proxy-balloonsbreeze.conf /root/nginx-proxy/conf.d/balloonsbreeze.conf
+docker exec nginx_proxy nginx -t && docker exec nginx_proxy nginx -s reload
+```
+
+### ⚠️ Gotchas learned in production
+- **ALWAYS start with `-f docker-compose.server.yml`.** Running plain
+  `docker compose up` uses the base `docker-compose.yml`, which names the
+  container `bb--web-1`, publishes `8080` on the host, and puts it **only on
+  `bbnet` — NOT `shared-network`**. Then `nginx_proxy` can't resolve
+  `balloonsbreeze-web` → the domain returns **502 Bad Gateway**. Fix: re-run with
+  `-f docker-compose.server.yml`. Verify: `docker ps --format '{{.Names}} | {{.Networks}}' | grep balloonsbreeze`
+  must show `balloonsbreeze-web | ...,shared-network` and no `8080` port.
+- **502 debug:** `docker exec nginx_proxy sh -c 'getent hosts balloonsbreeze-web && wget -qO- http://balloonsbreeze-web/api/health'`
+  — if the name doesn't resolve, `web` isn't on `shared-network`.
+- **Cert renewal cron** (use `;` not `&&`, so nginx reloads even if an unrelated
+  domain fails to renew):
+  ```
+  0 3,15 * * * docker run --rm -v /etc/letsencrypt:/etc/letsencrypt -v /root/nginx-proxy/certbot/www:/var/www/certbot certbot/certbot renew --quiet ; docker exec nginx_proxy nginx -s reload
+  ```
+  `certbot renew` touches ALL certs on the host; an unrelated failing domain
+  (e.g. `tinerijuristi.md`) does NOT affect this site — test ours in isolation
+  with `certbot renew --cert-name balloonsbreeze.md --dry-run`.
+- **"Site won't open" but `curl --resolve balloonsbreeze.md:443:<IP> https://balloonsbreeze.md` returns 200
+  and public resolvers (8.8.8.8/1.1.1.1) return the right IP → it's a CLIENT-side
+  DNS negative cache** (browser/OS/router cached NXDOMAIN from before propagation).
+  Fix: `ipconfig /flushdns` (Win) / `sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder` (Mac),
+  restart browser/router, or test on mobile data (different resolver). `www` can
+  lag behind the apex on some resolvers.
+
+---
+
 See also: [`RUN.md`](./RUN.md) · [`ENV.md`](./ENV.md) · [`ADMIN.md`](./ADMIN.md).
