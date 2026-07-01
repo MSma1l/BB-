@@ -193,6 +193,17 @@ export const ro: Dictionary = {
         text: "Materiale premium, design modern și transparență totală. Recomand din toată inima.",
       },
     ],
+    form: {
+      add: "Lasă o recenzie",
+      title: "Împărtășește experiența ta",
+      namePh: "Numele tău",
+      rolePh: "Eveniment (opțional)",
+      textPh: "Recenzia ta…",
+      rating: "Nota ta",
+      submit: "Trimite recenzia",
+      cancel: "Anulează",
+      thanks: "Mulțumim pentru recenzie!",
+    },
   },
   footer: {
     kicker: "Contactează-ne",

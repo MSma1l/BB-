@@ -1,7 +1,11 @@
 "use client";
 
+import { useMemo, useState } from "react";
+import { Star, Plus } from "lucide-react";
 import { useT } from "@/lib/i18n";
 import { initials } from "@/lib/utils";
+import { addReview, useVisitorReviews } from "@/lib/reviewStore";
+import type { Review } from "@/lib/types";
 import SectionHeading from "@/components/ui/SectionHeading";
 import Reveal from "@/components/ui/Reveal";
 
@@ -23,28 +27,66 @@ function Stars({ rating }: { rating: number }) {
 export default function Reviews() {
   const t = useT();
   const r = t.reviews;
+  const visitorReviews = useVisitorReviews();
+  const [open, setOpen] = useState(false);
+  const [thanks, setThanks] = useState(false);
+
+  // Built-in testimonials (from the dictionary) plus visitor-submitted ones on top.
+  const builtins = useMemo<Review[]>(
+    () => r.list.map((rev, i) => ({ id: `rev-${i + 1}`, ...rev })),
+    [r.list],
+  );
+  const all = useMemo(() => [...visitorReviews, ...builtins], [visitorReviews, builtins]);
+
+  const submit = (data: Omit<Review, "id">) => {
+    addReview(data, Date.now());
+    setOpen(false);
+    setThanks(true);
+    window.setTimeout(() => setThanks(false), 4000);
+  };
 
   return (
     <section
       id="reviews"
-      style={{
-        scrollMarginTop: 90,
-        padding: "clamp(70px,9vw,140px) 0",
-      }}
+      style={{ scrollMarginTop: 90, padding: "clamp(70px,9vw,140px) 0" }}
     >
       <div className="mx-auto w-[min(88%,1480px)]">
         <SectionHeading kicker={r.kicker} title={r.title} />
+
+        {/* leave-a-review control */}
+        <div className="mt-8 flex justify-center">
+          {thanks ? (
+            <div
+              className="rounded-full px-6 py-3 text-[14px] text-gold-200"
+              style={{ background: "rgba(231,178,76,.1)", border: "1px solid rgba(231,178,76,.4)" }}
+            >
+              ✓ {r.form.thanks}
+            </div>
+          ) : !open ? (
+            <button
+              onClick={() => setOpen(true)}
+              className="inline-flex cursor-pointer items-center gap-2 rounded-full px-6 py-3 text-[14px] font-semibold text-gold-200"
+              style={{ border: "1px solid rgba(231,178,76,.5)", background: "rgba(231,178,76,.07)" }}
+            >
+              <Plus size={16} /> {r.form.add}
+            </button>
+          ) : null}
+        </div>
+
+        {open ? (
+          <ReviewForm form={r.form} onSubmit={submit} onCancel={() => setOpen(false)} />
+        ) : null}
+
         <div
-          className="mt-[46px] grid gap-5"
+          className="mt-[40px] grid gap-5"
           style={{ gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))" }}
         >
-          {r.list.map((review, i) => (
-            <Reveal key={`${review.name}-${i}`} delay={(i % 3) * 0.06}>
+          {all.map((review, i) => (
+            <Reveal key={review.id} delay={(i % 3) * 0.06}>
               <div
                 className="flex h-full flex-col rounded-[14px] px-7 py-[30px]"
                 style={{
-                  background:
-                    "linear-gradient(160deg,rgba(24,12,18,.85),rgba(13,8,15,.85))",
+                  background: "linear-gradient(160deg,rgba(24,12,18,.85),rgba(13,8,15,.85))",
                   border: "1px solid rgba(231,178,76,.18)",
                 }}
               >
@@ -66,15 +108,14 @@ export default function Reviews() {
                     {initials(review.name)}
                   </span>
                   <div>
-                    <div
-                      className="text-[15px] font-medium"
-                      style={{ color: "#f0e2c5" }}
-                    >
+                    <div className="text-[15px] font-medium" style={{ color: "#f0e2c5" }}>
                       {review.name}
                     </div>
-                    <div className="text-[12.5px] tracking-[0.04em] text-muted">
-                      {review.role}
-                    </div>
+                    {review.role ? (
+                      <div className="text-[12.5px] tracking-[0.04em] text-muted">
+                        {review.role}
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               </div>
@@ -83,5 +124,116 @@ export default function Reviews() {
         </div>
       </div>
     </section>
+  );
+}
+
+function ReviewForm({
+  form,
+  onSubmit,
+  onCancel,
+}: {
+  form: ReturnType<typeof useT>["reviews"]["form"];
+  onSubmit: (data: Omit<Review, "id">) => void;
+  onCancel: () => void;
+}) {
+  const [name, setName] = useState("");
+  const [role, setRole] = useState("");
+  const [text, setText] = useState("");
+  const [rating, setRating] = useState(5);
+
+  const valid = name.trim() && text.trim();
+
+  const inputStyle = {
+    border: "1px solid rgba(231,178,76,.22)",
+    background: "rgba(231,178,76,.05)",
+  } as const;
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (!valid) return;
+        onSubmit({ name: name.trim(), role: role.trim(), text: text.trim(), rating });
+      }}
+      className="mx-auto mt-6 flex w-[min(100%,560px)] flex-col gap-3 rounded-[16px] p-6"
+      style={{
+        background: "linear-gradient(160deg,rgba(24,12,18,.9),rgba(13,8,15,.9))",
+        border: "1px solid rgba(231,178,76,.28)",
+        boxShadow: "0 30px 80px rgba(0,0,0,.5)",
+      }}
+    >
+      <div className="font-display text-[20px] text-gold-300">{form.title}</div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-[13px] text-sand-deep">{form.rating}</span>
+        <RatingInput value={rating} onChange={setRating} />
+      </div>
+
+      <input
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder={form.namePh}
+        autoFocus
+        className="rounded-[11px] px-[15px] py-[12px] text-[14px] text-cream outline-none"
+        style={inputStyle}
+      />
+      <input
+        value={role}
+        onChange={(e) => setRole(e.target.value)}
+        placeholder={form.rolePh}
+        className="rounded-[11px] px-[15px] py-[12px] text-[14px] text-cream outline-none"
+        style={inputStyle}
+      />
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder={form.textPh}
+        rows={4}
+        className="resize-none rounded-[11px] px-[15px] py-[12px] text-[14px] text-cream outline-none"
+        style={inputStyle}
+      />
+
+      <div className="mt-1 flex gap-3">
+        <button
+          type="submit"
+          disabled={!valid}
+          className="flex-1 rounded-[11px] border-none py-[12px] text-[15px] font-semibold bb-gold-btn disabled:cursor-not-allowed disabled:opacity-50"
+          style={{ boxShadow: "none" }}
+        >
+          {form.submit}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="cursor-pointer rounded-[11px] px-5 py-[12px] text-[14px] text-sand"
+          style={{ border: "1px solid rgba(231,178,76,.25)", background: "transparent" }}
+        >
+          {form.cancel}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function RatingInput({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  return (
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <button
+          key={n}
+          type="button"
+          onClick={() => onChange(n)}
+          aria-label={`${n}`}
+          className="cursor-pointer border-none bg-transparent p-0.5 leading-none"
+        >
+          <Star
+            size={22}
+            className="text-gold-400"
+            fill={n <= value ? "currentColor" : "none"}
+            style={{ opacity: n <= value ? 1 : 0.4 }}
+          />
+        </button>
+      ))}
+    </div>
   );
 }

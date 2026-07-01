@@ -150,6 +150,18 @@ export interface Dictionary {
     kicker: string;
     title: string;
     list: ReviewCopy[];
+    /** Visitor "leave a review" form. */
+    form: {
+      add: string;
+      title: string;
+      namePh: string;
+      rolePh: string;
+      textPh: string;
+      rating: string;
+      submit: string;
+      cancel: string;
+      thanks: string;
+    };
   };
   footer: {
     kicker: string;

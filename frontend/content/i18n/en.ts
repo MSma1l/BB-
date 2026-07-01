@@ -183,6 +183,17 @@ export const en: Dictionary = {
         text: "Premium materials, modern design and full transparency. I recommend them wholeheartedly.",
       },
     ],
+    form: {
+      add: "Leave a review",
+      title: "Share your experience",
+      namePh: "Your name",
+      rolePh: "Event (optional)",
+      textPh: "Your review…",
+      rating: "Your rating",
+      submit: "Submit review",
+      cancel: "Cancel",
+      thanks: "Thank you for your review!",
+    },
   },
   footer: {
     kicker: "Get in touch",

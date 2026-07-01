@@ -15,11 +15,12 @@
 ## How the frontend is wired (context you need)
 
 - **No server today.** The app is exported to static HTML in `frontend/out/`.
-- **Three "stores" fake persistence with `localStorage`** so features work in a demo
+- **Four "stores" fake persistence with `localStorage`** so features work in a demo
   and sync across browser tabs (via the `storage` event):
   - `frontend/lib/chatStore.ts` — chat conversations.
   - `frontend/lib/photoStore.ts` — admin-editable site photos.
   - `frontend/lib/contentStore.ts` — admin-editable site text (all copy, per locale).
+  - `frontend/lib/reviewStore.ts` — visitor-submitted reviews.
   Each exposes a tiny contract: **a load/save pair + a `subscribe(cb)` function**.
   Replace the *insides* of these; leave the exported function names/shapes alone.
 - **Read-only content** (services, reviews) is served by `async` accessor functions
@@ -165,6 +166,13 @@ if the text store serves the whole dictionary, these can fold into it.)
 
 Shapes are in `lib/types.ts` (`ServiceGroup`, `ServiceCategory`, `Review`).
 (The gallery is now an editable photo group — see #3 — not a separate accessor.)
+
+**Visitor reviews:** `getReviews` above returns the built-in testimonials (from the
+dictionary, editable in the admin). Visitors can also **submit their own** reviews,
+stored in `frontend/lib/reviewStore.ts` (`loadReviews`/`addReview`/`removeReview`/
+`subscribe`) and shown alongside the built-ins. Swap it for a real API and add a
+**moderation** step — approve/reject before publishing, and de-dupe/spam-guard.
+`removeReview(id)` is already there to back an admin moderation UI.
 
 ---
 
