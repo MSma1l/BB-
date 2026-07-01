@@ -4,13 +4,14 @@ export function cn(...parts: Array<string | false | null | undefined>): string {
 }
 
 /**
- * Format an epoch-ms timestamp as HH:MM.
- * Uses UTC so server pre-render and client hydration agree (no mismatch).
+ * Format an epoch-ms timestamp as HH:MM in the viewer's local time.
+ * Only used in client-only views (chat widget + admin inbox), which are never
+ * server-pre-rendered, so local time causes no hydration mismatch.
  */
 export function formatTime(ts: number): string {
   const d = new Date(ts);
-  const h = String(d.getUTCHours()).padStart(2, "0");
-  const m = String(d.getUTCMinutes()).padStart(2, "0");
+  const h = String(d.getHours()).padStart(2, "0");
+  const m = String(d.getMinutes()).padStart(2, "0");
   return `${h}:${m}`;
 }
 
