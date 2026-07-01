@@ -1,0 +1,77 @@
+# =============================================================================
+# Production compose for the turcan-ivan server (behind the shared nginx_proxy).
+# =============================================================================
+# The `web` container joins the EXTERNAL `shared-network`, and the existing
+# `nginx_proxy` routes to it by container name `balloonsbreeze-web`. No host
+# ports are published — the public proxy fronts everything (TLS + domain).
+# db + backend stay on the private `bbnet` network only.
+#
+#   docker compose -f docker-compose.server.yml up -d --build
+# =============================================================================
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file: [.env]
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks: [bbnet]
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: [.env]
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - uploads:/app/uploads
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - node -e "fetch('http://localhost:4000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks: [bbnet]
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: /api
+    container_name: balloonsbreeze-web
+    restart: unless-stopped
+    environment:
+      # Edge Basic Auth on /admin-bb (kept as defense-in-depth behind the proxy).
+      EDGE_AUTH_USER: ${EDGE_AUTH_USER:-admin}
+      EDGE_AUTH_PASSWORD: ${EDGE_AUTH_PASSWORD:-bbreeze-edge}
+    depends_on:
+      backend:
+        condition: service_healthy
+    # bbnet: reach the backend/db privately. shared-network: reachable by nginx_proxy.
+    networks: [bbnet, shared-network]
+
+volumes:
+  pgdata:
+  uploads:
+
+networks:
+  bbnet:
+    driver: bridge
+  shared-network:
+    external: true
