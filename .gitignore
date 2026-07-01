@@ -1,0 +1,14 @@
+# Secrets / local env
+.env
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+out/
+.next/
+
+# Logs
+*.log
+npm-debug.log

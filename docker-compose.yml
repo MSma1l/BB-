@@ -1,0 +1,63 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - bbnet
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      # Persist uploaded images (backend resolves UPLOAD_DIR relative to /app).
+      - uploads:/app/uploads
+    expose:
+      - "4000"
+    networks:
+      - bbnet
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: /api
+    restart: unless-stopped
+    environment:
+      # Edge (nginx) Basic Auth for /admin-bb — defense-in-depth over the JWT login.
+      EDGE_AUTH_USER: ${EDGE_AUTH_USER:-admin}
+      EDGE_AUTH_PASSWORD: ${EDGE_AUTH_PASSWORD:-bbreeze-edge}
+    depends_on:
+      - backend
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    networks:
+      - bbnet
+
+volumes:
+  pgdata:
+  uploads:
+
+networks:
+  bbnet:
+    driver: bridge

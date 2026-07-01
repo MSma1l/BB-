@@ -15,6 +15,8 @@ export default function IntroPreloader() {
 
   const end = () => {
     setFading(true);
+    // Signal the intro is over so ambient music can start (see BackgroundMusic).
+    window.dispatchEvent(new Event("bb-intro-done"));
     window.setTimeout(() => setGone(true), 600);
   };
 

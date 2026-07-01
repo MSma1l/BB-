@@ -41,6 +41,23 @@ curated gallery photos + real contact details) and the backend handoff (replace
 the four `localStorage` stores + `content/` accessors with a real API — all
 catalogued in [`BACKEND_TODO.md`](./BACKEND_TODO.md)).**
 
+- ✅ **Real backend built** in `backend/` (Node 20 + Express + TypeScript +
+  Prisma + PostgreSQL). JWT admin auth (bcrypt-hashed password seeded from env),
+  chat + admin inbox with **SSE** realtime, photo uploads (multer → disk volume),
+  per-locale editable texts, and visitor reviews. Frozen contract in
+  `backend/API_CONTRACT.md`; full docs in [`docs/backend/`](./docs/backend/).
+- ✅ **Frontend wired to the API** — `frontend/lib/{auth,chatStore,photoStore,contentStore,reviewStore}.ts`
+  now call the backend via `frontend/lib/api.ts` (cache+revalidate + SSE),
+  keeping every exported signature unchanged (the golden rule). Read-only
+  accessors (`content/services.ts`, `content/reviews.ts`) intentionally stay
+  frontend-side (they read the shipped dictionary; editing flows via Texts).
+- ✅ **Dockerized** — `docker compose up --build` from repo root runs `db`
+  (postgres) + `backend` + `web` (nginx serving the static frontend and
+  reverse-proxying `/api` + `/uploads` to the backend, single origin). Config in
+  root `.env` / `.env.example`. **Not yet run live against Postgres in-repo**
+  (code compiles clean; run it on a Docker host). Admin: `/admin-bb`, default
+  `admin` / `bbreeze-admin` (change `ADMIN_*` in `.env` before deploy).
+
 ---
 
 ## ▶️ How to run (in `frontend/`)

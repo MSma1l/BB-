@@ -4,7 +4,7 @@ import { Phone, MessageCircle } from "lucide-react";
 import { useT } from "@/lib/i18n";
 import { useUI } from "@/lib/ui";
 
-const PHONE = "+37360000000";
+const PHONE = "+37376616384";
 
 export default function Hero() {
   const t = useT();

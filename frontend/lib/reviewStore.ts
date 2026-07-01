@@ -1,71 +1,140 @@
 // Visitor-submitted reviews. The built-in testimonials live in the dictionary
 // (content/i18n, editable from the admin); these are the ones site visitors add
-// themselves. Same localStorage + cross-tab pattern as the other stores.
+// themselves.
 //
-// Visitor reviews are locale-independent (a testimonial isn't auto-translated),
-// so they show as written across all three languages.
-//
-// BACKEND: replace load/add with a real API. Real reviews usually want
-// moderation — expose an admin approve/delete step (removeReview is already here)
-// and only show approved ones publicly. The UI contract (Review[] + subscribe)
-// stays the same.
+// Backed by the REST/SSE API (backend/API_CONTRACT.md §Reviews). Signatures are
+// unchanged: sync `loadReviews()` returns an in-memory cache (empty until
+// fetched), a background fetch hydrates it, `addReview` POSTs (optimistic
+// prepend) and returns the created Review, `removeReview` DELETEs, and
+// `subscribe` fires on same-tab events AND SSE pushes.
 
 "use client";
 
 import { useEffect, useState } from "react";
+import { apiFetch, apiJson, sse } from "@/lib/api";
 import type { Review } from "@/lib/types";
 
-const KEY = "bb_reviews";
 const EVENT = "bb-reviews-changed";
 
 const canUse = () => typeof window !== "undefined";
 
-/** All visitor-submitted reviews, newest first. */
+/** In-memory cache (newest first); the source of truth the sync loader returns. */
+let cache: Review[] = [];
+/** In-memory cache of reviews awaiting moderation (admin only). */
+let pendingCache: Review[] = [];
+
+function emit(): void {
+  if (!canUse()) return;
+  window.dispatchEvent(new Event(EVENT));
+}
+
+/** All published (approved) visitor reviews, newest first. */
 export function loadReviews(): Review[] {
-  if (!canUse()) return [];
+  return cache;
+}
+
+/** Reviews awaiting moderation, newest first (admin queue). */
+export function loadPendingReviews(): Review[] {
+  return pendingCache;
+}
+
+/** Refresh the public (approved) cache from the API, then notify subscribers. */
+async function hydrate(): Promise<void> {
+  if (!canUse()) return;
   try {
-    const raw = window.localStorage.getItem(KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? (parsed as Review[]) : [];
+    const list = await apiJson<Review[]>("/reviews");
+    cache = Array.isArray(list) ? list : [];
+    emit();
   } catch {
-    return [];
+    /* offline — keep cache */
   }
 }
 
-function save(list: Review[]): boolean {
-  if (!canUse()) return false;
+/** Refresh the pending (moderation) cache from the API (admin, needs token). */
+async function hydratePending(): Promise<void> {
+  if (!canUse()) return;
   try {
-    window.localStorage.setItem(KEY, JSON.stringify(list));
-    window.dispatchEvent(new Event(EVENT));
-    return true;
+    const list = await apiJson<Review[]>("/reviews/pending");
+    pendingCache = Array.isArray(list) ? list : [];
+    emit();
   } catch {
-    return false;
+    /* not authed / offline — keep cache */
   }
 }
 
-/** Add a review (id/ts assigned here) and persist it. Returns the created review. */
+/**
+ * Add a review (POST). Optimistically prepends a local copy and returns it; the
+ * server's canonical Review replaces it once the request resolves.
+ */
 export function addReview(input: Omit<Review, "id">, ts: number): Review | null {
   const review: Review = { id: `u${ts}`, ...input };
-  const ok = save([review, ...loadReviews()]); // newest first
-  return ok ? review : null;
+  cache = [review, ...cache]; // optimistic, newest first
+  emit();
+  if (canUse()) {
+    apiFetch("/reviews", {
+      method: "POST",
+      json: {
+        name: input.name,
+        role: input.role,
+        rating: input.rating,
+        text: input.text,
+      },
+    })
+      .then((res) => res.json())
+      .then((saved: Review) => {
+        if (saved && saved.id) {
+          cache = [saved, ...cache.filter((r) => r.id !== review.id)];
+          emit();
+        }
+      })
+      .catch(() => {
+        /* keep optimistic copy */
+      });
+  }
+  return review;
 }
 
-/** Remove a visitor review by id (admin moderation / undo). */
+/**
+ * Approve a pending review (PUT). Optimistically drops it from the pending
+ * queue; SSE re-hydration then moves it into the public cache.
+ */
+export function approveReview(id: string): void {
+  pendingCache = pendingCache.filter((r) => r.id !== id); // optimistic
+  emit();
+  if (!canUse()) return;
+  apiFetch(`/reviews/${encodeURIComponent(id)}/approve`, { method: "PUT" }).catch(() => {
+    /* keep optimistic copy; SSE will reconcile */
+  });
+}
+
+/** Remove a review by id (DELETE, optimistic). Works for public + pending. */
 export function removeReview(id: string): boolean {
-  return save(loadReviews().filter((r) => r.id !== id));
+  cache = cache.filter((r) => r.id !== id); // optimistic
+  pendingCache = pendingCache.filter((r) => r.id !== id); // optimistic (reject)
+  emit();
+  if (!canUse()) return true;
+  apiFetch(`/reviews/${encodeURIComponent(id)}`, { method: "DELETE" }).catch(() => {
+    /* keep optimistic copy */
+  });
+  return true;
 }
 
-/** Subscribe to review changes from either tab. Returns an unsubscribe fn. */
+/**
+ * Subscribe to review changes. Returns an unsubscribe fn. Hydrates in the
+ * background, listens for same-tab custom events, and opens the SSE stream
+ * (server pushes re-fetch → cache update → cb).
+ */
 export function subscribe(cb: () => void): () => void {
   if (!canUse()) return () => {};
-  const onStorage = (e: StorageEvent) => {
-    if (e.key === KEY) cb();
-  };
-  window.addEventListener("storage", onStorage);
+  void hydrate();
+  void hydratePending();
   window.addEventListener(EVENT, cb);
+  const closeSse = sse("/reviews/stream", () => {
+    void Promise.all([hydrate(), hydratePending()]).then(cb);
+  });
   return () => {
-    window.removeEventListener("storage", onStorage);
     window.removeEventListener(EVENT, cb);
+    closeSse();
   };
 }
 
@@ -74,6 +143,17 @@ export function useVisitorReviews(): Review[] {
   const [list, setList] = useState<Review[]>([]);
   useEffect(() => {
     const refresh = () => setList(loadReviews());
+    refresh();
+    return subscribe(refresh);
+  }, []);
+  return list;
+}
+
+/** Pending (unmoderated) reviews, live-updated — backs the admin queue. */
+export function usePendingReviews(): Review[] {
+  const [list, setList] = useState<Review[]>([]);
+  useEffect(() => {
+    const refresh = () => setList(loadPendingReviews());
     refresh();
     return subscribe(refresh);
   }, []);

@@ -213,7 +213,7 @@ export interface Dictionary {
     loginError: string;
     logout: string;
     /** Dashboard section menu. */
-    nav: { messages: string; photos: string; texts: string };
+    nav: { messages: string; photos: string; texts: string; reviews: string };
     /** Phone label in the conversation header. */
     phoneLabel: string;
     /** Toast prefix when a new customer message arrives, e.g. "New message from". */
@@ -238,6 +238,15 @@ export interface Dictionary {
       intro: string;
       note: string;
       resetLang: string;
+    };
+    /** Visitor-review moderation section. */
+    reviews: {
+      title: string;
+      intro: string;
+      empty: string;
+      approve: string;
+      reject: string;
+      pending: string;
     };
   };
   /** Intro preloader "skip" label. */

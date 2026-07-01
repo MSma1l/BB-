@@ -1,55 +1,64 @@
 /**
- * TEMPORARY client-side admin auth.
+ * Admin auth, backed by the REST API (backend/API_CONTRACT.md §Auth).
  *
- * ⚠️ This is deterrence, not real security: the credentials below ship in the
- * browser bundle and can be read by anyone who looks. It only keeps the admin
- * out of casual reach until a backend exists.
- *
- * BACKEND: replace the body of `login()` with a real API call that verifies
- * credentials server-side and returns a session token; keep the same signature
- * so the login UI (components/chat/AdminLogin.tsx) needs no changes. Swap the
- * sessionStorage flag for the real token/cookie at the same time.
+ * `login()` verifies credentials server-side (POST /admin/login) and stores the
+ * returned JWT; `isAuthed()` checks the token's `exp`; `logout()` clears it.
+ * The token is attached as a Bearer header to admin calls by `lib/api.ts`.
  */
 
-// Change these to set the admin credentials (placeholder values).
-const ADMIN_USER = "admin";
-const ADMIN_PASS = "bbreeze-admin";
+import { apiJson, clearToken, getToken, setToken } from "@/lib/api";
 
-const AUTH_KEY = "bb_admin_authed";
-
-/** Verify credentials. Returns true on success and marks the session authed. */
+/** POST credentials; on success store the JWT and return true, else false. */
 export async function login(username: string, password: string): Promise<boolean> {
-  const ok = username.trim() === ADMIN_USER && password === ADMIN_PASS;
-  if (ok) {
-    try {
-      sessionStorage.setItem(AUTH_KEY, "1");
-    } catch {
-      /* sessionStorage unavailable — stay authed for this render only */
-    }
-  }
-  return ok;
-  // LATER:
-  // const res = await fetch("/api/admin/login", {
-  //   method: "POST",
-  //   body: JSON.stringify({ username, password }),
-  // });
-  // return res.ok;
-}
-
-/** Whether the current session is already authenticated. */
-export function isAuthed(): boolean {
   try {
-    return sessionStorage.getItem(AUTH_KEY) === "1";
+    const res = await apiJson<{ token: string; expiresIn?: number }>(
+      "/admin/login",
+      { method: "POST", json: { username, password } },
+    );
+    if (res?.token) {
+      setToken(res.token);
+      return true;
+    }
+    return false;
   } catch {
     return false;
   }
 }
 
+/** Decode a JWT payload's `exp` (seconds). Returns null if unreadable. */
+function tokenExp(token: string): number | null {
+  try {
+    const payload = token.split(".")[1];
+    if (!payload) return null;
+    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const decoded =
+      typeof atob === "function"
+        ? atob(normalized)
+        : Buffer.from(normalized, "base64").toString("binary");
+    const data = JSON.parse(decoded) as { exp?: number };
+    return typeof data.exp === "number" ? data.exp : null;
+  } catch {
+    return null;
+  }
+}
+
+/** True if a token exists and its JWT `exp` is still in the future. */
+export function isAuthed(): boolean {
+  const token = getToken();
+  if (!token) return false;
+  const exp = tokenExp(token);
+  // If the token carries no exp, treat mere presence as authed.
+  if (exp === null) return true;
+  return exp * 1000 > Date.now();
+}
+
+/** Header block for admin API calls (kept for callers that need it directly). */
+export function authHeader(): Record<string, string> {
+  const token = getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 /** End the admin session. */
 export function logout(): void {
-  try {
-    sessionStorage.removeItem(AUTH_KEY);
-  } catch {
-    /* ignore */
-  }
+  clearToken();
 }

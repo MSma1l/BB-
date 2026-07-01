@@ -1,19 +1,14 @@
 // Shared "site photos" store: lets the admin replace images and have the change
-// show up on the public site (About carousel + Showcase strip) immediately.
+// show up on the public site (About carousel + Showcase strip + Gallery grid).
 //
-// Same idea as lib/chatStore.ts — the admin (/admin-bb) and the public site (/)
-// are separate documents, so they sync through localStorage + the browser's
-// cross-tab `storage` event. Defaults are the static files in /public/photos;
-// once the admin replaces one, the override is stored and read everywhere.
+// Backed by the REST/SSE API (backend/API_CONTRACT.md §Photos). The UI contract
+// (per-group string[] + subscribe(cb) + useSitePhotos) is unchanged: sync
+// `loadGroup(id)` returns an in-memory cache (defaults until fetched), a
+// background fetch hydrates it, mutations PUT the new list optimistically, and
+// `subscribe` fires on same-tab events AND SSE pushes.
 //
-// A replacement is persisted as a *data URL* (not a blob: object URL, which is
-// only valid in the tab that created it and dies on reload). We downscale +
-// re-encode to JPEG first so the base64 stays small enough for localStorage.
-//
-// BACKEND: replace load/save with a real media API/CMS + upload endpoint. The
-// UI contract (per-group string[] + subscribe(cb)) is unchanged. See
-// fileToScaledDataUrl — the backend uploads the File and stores the returned
-// URL instead of embedding a data URL.
+// Uploads go through `uploadPhoto(group, file)` (multipart POST) which returns
+// the stored URL, replacing the old client-side data-URL encoding.
 
 "use client";
 
@@ -24,8 +19,8 @@ import {
   showcasePhotos,
   type PhotoGroupId,
 } from "@/content/photos";
+import { apiFetch, apiJson, sse } from "@/lib/api";
 
-const KEY = "bb_site_photos";
 const EVENT = "bb-photos-changed";
 
 const canUse = () => typeof window !== "undefined";
@@ -37,38 +32,53 @@ const DEFAULTS: Record<PhotoGroupId, string[]> = {
   gallery: galleryPhotos,
 };
 
-type Overrides = Partial<Record<PhotoGroupId, string[]>>;
+/** In-memory cache per group; the source of truth the sync loader returns. */
+const cache: Partial<Record<PhotoGroupId, string[]>> = {};
 
-function readOverrides(): Overrides {
-  if (!canUse()) return {};
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    return raw ? (JSON.parse(raw) as Overrides) : {};
-  } catch {
-    return {};
-  }
+function emit(): void {
+  if (!canUse()) return;
+  window.dispatchEvent(new Event(EVENT));
 }
 
-/** Current images for a group — the admin's override if set, else the defaults. */
+/** Current images for a group — the cached list if hydrated, else the defaults. */
 export function loadGroup(id: PhotoGroupId): string[] {
-  return readOverrides()[id] ?? [...DEFAULTS[id]];
+  return cache[id] ?? [...DEFAULTS[id]];
+}
+
+/** Refresh one group's list from the API, then notify subscribers. */
+async function hydrate(id: PhotoGroupId): Promise<void> {
+  if (!canUse()) return;
+  try {
+    const list = await apiJson<string[]>(`/photos/${id}`);
+    if (Array.isArray(list)) {
+      cache[id] = list;
+      emit();
+    }
+  } catch {
+    /* offline — keep cache/defaults */
+  }
 }
 
 /**
- * Persist a group's image list. Returns false if the write fails (e.g. the
- * localStorage quota is exceeded by large images), so the UI can warn.
+ * Persist a group's image list (PUT). Optimistically updates the cache and
+ * returns true; the network write happens in the background.
  */
 export function saveGroup(id: PhotoGroupId, images: string[]): boolean {
-  if (!canUse()) return false;
-  try {
-    const all = readOverrides();
-    all[id] = images;
-    window.localStorage.setItem(KEY, JSON.stringify(all));
-    window.dispatchEvent(new Event(EVENT));
-    return true;
-  } catch {
-    return false;
-  }
+  cache[id] = images; // optimistic
+  emit();
+  if (!canUse()) return true;
+  apiFetch(`/photos/${id}`, { method: "PUT", json: { images } })
+    .then((res) => res.json())
+    .then((saved: string[]) => {
+      if (Array.isArray(saved)) {
+        cache[id] = saved;
+        emit();
+      }
+    })
+    .catch(() => {
+      /* keep optimistic copy */
+    });
+  return true;
 }
 
 /** Replace a single image in a group and persist. */
@@ -92,38 +102,48 @@ export function removePhoto(id: PhotoGroupId, index: number): boolean {
   );
 }
 
-/** Restore a group back to the built-in default photos. */
+/** Restore a group back to the built-in default photos (DELETE). */
 export function resetGroup(id: PhotoGroupId): boolean {
   if (!canUse()) return false;
-  try {
-    const all = readOverrides();
-    delete all[id];
-    window.localStorage.setItem(KEY, JSON.stringify(all));
-    window.dispatchEvent(new Event(EVENT));
-    return true;
-  } catch {
-    return false;
-  }
+  cache[id] = [...DEFAULTS[id]]; // optimistic
+  emit();
+  apiFetch(`/photos/${id}`, { method: "DELETE" })
+    .then((res) => res.json())
+    .then((saved: string[]) => {
+      if (Array.isArray(saved)) {
+        cache[id] = saved;
+        emit();
+      }
+    })
+    .catch(() => {
+      /* keep optimistic copy */
+    });
+  return true;
 }
 
-/** Subscribe to photo changes from either tab. Returns an unsubscribe fn. */
+/**
+ * Subscribe to photo changes. Returns an unsubscribe fn. Hydrates all groups in
+ * the background, listens for same-tab custom events, and opens the SSE stream
+ * (server pushes re-fetch every group → cache update → cb).
+ */
 export function subscribe(cb: () => void): () => void {
   if (!canUse()) return () => {};
-  const onStorage = (e: StorageEvent) => {
-    if (e.key === KEY) cb();
-  };
-  window.addEventListener("storage", onStorage);
+  (Object.keys(DEFAULTS) as PhotoGroupId[]).forEach((id) => void hydrate(id));
   window.addEventListener(EVENT, cb);
+  const closeSse = sse("/photos/stream", () => {
+    (Object.keys(DEFAULTS) as PhotoGroupId[]).forEach((id) => void hydrate(id));
+    cb();
+  });
   return () => {
-    window.removeEventListener("storage", onStorage);
     window.removeEventListener(EVENT, cb);
+    closeSse();
   };
 }
 
 /**
  * Read the current photos for a group, defaulting to the static files for the
  * first (server-matching) render, then swapping in any saved override after
- * mount. Live-updates when the admin replaces an image in another tab.
+ * mount. Live-updates when the admin replaces an image (same tab or SSE).
  */
 export function useSitePhotos(id: PhotoGroupId): string[] {
   const [images, setImages] = useState<string[]>(() => [...DEFAULTS[id]]);
@@ -136,37 +156,15 @@ export function useSitePhotos(id: PhotoGroupId): string[] {
 }
 
 /**
- * Downscale + JPEG-encode a picked file to a data URL small enough to persist
- * in localStorage. BACKEND: skip this and upload the raw File instead.
+ * Upload a picked file to media storage (multipart POST) and return the stored
+ * URL. Replaces the old client-side data-URL encoding.
  */
-export function fileToScaledDataUrl(
-  file: File,
-  maxDim = 1400,
-  quality = 0.85,
-): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const img = new window.Image();
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-      const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
-      const w = Math.max(1, Math.round(img.width * scale));
-      const h = Math.max(1, Math.round(img.height * scale));
-      const canvas = document.createElement("canvas");
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        reject(new Error("Canvas 2D context unavailable"));
-        return;
-      }
-      ctx.drawImage(img, 0, 0, w, h);
-      resolve(canvas.toDataURL("image/jpeg", quality));
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error("Could not load the selected image"));
-    };
-    img.src = url;
+export async function uploadPhoto(id: PhotoGroupId, file: File): Promise<string> {
+  const form = new FormData();
+  form.append("file", file);
+  const res = await apiJson<{ url: string }>(`/photos/${id}/upload`, {
+    method: "POST",
+    body: form,
   });
+  return res.url;
 }

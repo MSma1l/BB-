@@ -1,99 +1,149 @@
 // Shared conversation store for the customer chat widget and the admin inbox.
 //
-// The site is a static export with no backend, yet the customer chat (on `/`)
-// and the admin panel (on `/admin-bb`) are separate pages that must see the
-// same conversations. localStorage is the only channel that spans both: the
-// browser fires a `storage` event in *other* tabs on every write, so an admin
-// tab is notified the instant a customer (in another tab) sends a message. For
-// updates within the *same* tab we dispatch a custom event, since `storage`
-// does not fire in the tab that made the change.
+// Backed by the REST/SSE API (backend/API_CONTRACT.md §Chat). The exported
+// signatures are unchanged so the components (ChatWidget, MessagesSection,
+// AdminShell) need no edits: the sync `loadConversations()` returns an in-memory
+// cache, a background fetch hydrates it, and `subscribe(cb)` fires on same-tab
+// custom events AND server pushes over SSE.
 //
-// BACKEND: replace load/save with a real API + websocket/SSE subscription. The
-// component contract (Conversation[] + a subscribe(cb) callback) stays the same.
+// The admin inbox lists ALL conversations (needs the Bearer token). The visitor
+// widget has no token; it resumes its own thread via GET /conversations/:id,
+// keyed by the localStorage `myConversationId`.
 
+import { apiFetch, apiJson, getToken, sse } from "@/lib/api";
 import type { ChatMessage, Conversation } from "@/lib/types";
 
-const KEY = "bb_conversations";
 /** Remembers which conversation belongs to this visitor, so they resume it. */
 const MY_KEY = "bb_my_conversation";
-/** Same-tab change notification (storage events only reach *other* tabs). */
+/** Same-tab change notification. */
 const EVENT = "bb-conversations-changed";
 
 const canUse = () => typeof window !== "undefined";
 
-/** Read the full conversation list; `[]` if unset or corrupt. */
-export function loadConversations(): Conversation[] {
-  if (!canUse()) return [];
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as Conversation[]) : [];
-  } catch {
-    return [];
-  }
-}
+/** In-memory cache; the source of truth the sync loaders return. */
+let cache: Conversation[] = [];
 
-function save(convs: Conversation[]): void {
+/** Notify listeners in *this* tab (SSE + storage-style refresh path). */
+function emit(): void {
   if (!canUse()) return;
-  window.localStorage.setItem(KEY, JSON.stringify(convs));
-  // Notify listeners in *this* tab; other tabs get the native `storage` event.
   window.dispatchEvent(new Event(EVENT));
 }
 
+function upsert(conv: Conversation): void {
+  const i = cache.findIndex((c) => c.id === conv.id);
+  if (i === -1) cache = [...cache, conv];
+  else cache = cache.map((c) => (c.id === conv.id ? conv : c));
+}
+
+/** Read the full conversation list from the in-memory cache. */
+export function loadConversations(): Conversation[] {
+  return cache;
+}
+
 /**
- * Remove any leftover pre-seeded demo threads (ids prefixed "demo-"), keeping
- * only real, user-initiated conversations. Lets earlier demo data still sitting
- * in a browser's localStorage clear itself out.
+ * Refresh the cache from the API, then notify subscribers. Admins (token
+ * present) list everything; a tokenless visitor fetches only their own thread.
+ */
+async function hydrate(): Promise<void> {
+  if (!canUse()) return;
+  try {
+    if (getToken()) {
+      const list = await apiJson<Conversation[]>("/conversations");
+      cache = Array.isArray(list) ? list : [];
+      emit();
+      return;
+    }
+    const myId = getMyConversationId();
+    if (myId) {
+      const mine = await apiJson<Conversation>(
+        `/conversations/${encodeURIComponent(myId)}`,
+      );
+      if (mine && mine.id) {
+        upsert(mine);
+        emit();
+      }
+    }
+  } catch {
+    /* offline / unauthorized — keep whatever is cached */
+  }
+}
+
+/**
+ * Remove leftover pre-seeded demo threads. No-op now that data is server-side
+ * (kept for compatibility with existing callers).
  */
 export function dropDemoConversations(): void {
-  if (!canUse()) return;
-  const all = loadConversations();
-  const real = all.filter((c) => !c.id.startsWith("demo-"));
-  if (real.length !== all.length) save(real);
+  /* no-op: there is no localStorage seed anymore */
 }
 
 /** Add a brand-new conversation (customer just submitted the intake form). */
 export function addConversation(conv: Conversation): void {
-  save([...loadConversations(), conv]);
+  upsert(conv); // optimistic
+  emit();
+  if (!canUse()) return;
+  apiFetch("/conversations", { method: "POST", json: conv })
+    .then((res) => res.json())
+    .then((saved: Conversation) => {
+      if (saved && saved.id) {
+        upsert(saved);
+        emit();
+      }
+    })
+    .catch(() => {
+      /* keep optimistic copy */
+    });
 }
 
 /** Append a message to a conversation and bump its last-activity timestamp. */
 export function appendMessage(convId: string, msg: ChatMessage): void {
-  save(
-    loadConversations().map((c) =>
-      c.id === convId
-        ? { ...c, ts: msg.ts, messages: [...c.messages, msg] }
-        : c,
-    ),
+  // optimistic
+  cache = cache.map((c) =>
+    c.id === convId ? { ...c, ts: msg.ts, messages: [...c.messages, msg] } : c,
   );
+  emit();
+  if (!canUse()) return;
+  apiFetch(`/conversations/${encodeURIComponent(convId)}/messages`, {
+    method: "POST",
+    json: msg,
+  }).catch(() => {
+    /* keep optimistic copy */
+  });
 }
 
 /** This visitor's own conversation id (persists across reloads), or null. */
 export function getMyConversationId(): string | null {
   if (!canUse()) return null;
-  return window.localStorage.getItem(MY_KEY);
+  try {
+    return window.localStorage.getItem(MY_KEY);
+  } catch {
+    return null;
+  }
 }
 
 /** Remember this visitor's conversation id for future visits. */
 export function setMyConversationId(id: string): void {
   if (!canUse()) return;
-  window.localStorage.setItem(MY_KEY, id);
+  try {
+    window.localStorage.setItem(MY_KEY, id);
+  } catch {
+    /* ignore */
+  }
 }
 
 /**
- * Subscribe to any change from either tab. Returns an unsubscribe function.
- * Fires on the native cross-tab `storage` event and our same-tab custom event.
+ * Subscribe to any change. Returns an unsubscribe function. Kicks off a
+ * background hydrate, listens for same-tab custom events, and opens the SSE
+ * stream (server pushes trigger a re-fetch → cache update → cb).
  */
 export function subscribe(cb: () => void): () => void {
   if (!canUse()) return () => {};
-  const onStorage = (e: StorageEvent) => {
-    if (e.key === KEY) cb();
-  };
-  window.addEventListener("storage", onStorage);
+  void hydrate();
   window.addEventListener(EVENT, cb);
+  const closeSse = sse("/conversations/stream", () => {
+    void hydrate().then(cb);
+  });
   return () => {
-    window.removeEventListener("storage", onStorage);
     window.removeEventListener(EVENT, cb);
+    closeSse();
   };
 }

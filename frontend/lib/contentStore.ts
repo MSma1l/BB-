@@ -1,20 +1,18 @@
 // Shared "site text" store: lets the admin edit every string in the site's
 // dictionary (per language) and have the change show up on the public site.
 //
-// Same pattern as chatStore/photoStore — the admin (/admin-bb) and the public
-// site (/) are separate documents, synced through localStorage + the browser's
-// cross-tab `storage` event. Overrides are keyed by locale and a dot-path into
-// the Dictionary (e.g. "hero.titleA", "about.points.0", "footer.phone"); only
-// changed fields are stored, everything else falls back to the built-in copy.
-//
-// BACKEND: replace load/save with a real content API/CMS. mergeDictionary and
-// the dot-path helpers stay the same; the provider just fetches overrides.
+// Backed by the REST/SSE API (backend/API_CONTRACT.md §Texts). The exported
+// signatures are unchanged: sync `loadAllOverrides()`/`loadLocaleOverrides()`
+// return an in-memory cache (empty until fetched), a background fetch hydrates
+// it + fires subscribers so the i18n provider re-applies overrides, and
+// mutations call the API optimistically. `mergeDictionary` + the dot-path
+// helpers stay pure/unchanged.
 
 "use client";
 
+import { apiFetch, apiJson, sse } from "@/lib/api";
 import type { Dictionary, Locale } from "@/lib/types";
 
-const KEY = "bb_text_overrides";
 const EVENT = "bb-texts-changed";
 
 const canUse = () => typeof window !== "undefined";
@@ -23,66 +21,107 @@ const canUse = () => typeof window !== "undefined";
 export type LocaleOverrides = Record<string, string | number>;
 export type AllOverrides = Partial<Record<Locale, LocaleOverrides>>;
 
+/** In-memory cache; the source of truth the sync loaders return. */
+let cache: AllOverrides = {};
+
+function emit(): void {
+  if (!canUse()) return;
+  window.dispatchEvent(new Event(EVENT));
+}
+
 export function loadAllOverrides(): AllOverrides {
-  if (!canUse()) return {};
-  try {
-    const raw = window.localStorage.getItem(KEY);
-    return raw ? (JSON.parse(raw) as AllOverrides) : {};
-  } catch {
-    return {};
-  }
+  return cache;
 }
 
 export function loadLocaleOverrides(locale: Locale): LocaleOverrides {
-  return loadAllOverrides()[locale] ?? {};
+  return cache[locale] ?? {};
 }
 
-function writeAll(all: AllOverrides): boolean {
-  if (!canUse()) return false;
+/** Refresh the cache from the API, then notify subscribers. */
+async function hydrate(): Promise<void> {
+  if (!canUse()) return;
   try {
-    window.localStorage.setItem(KEY, JSON.stringify(all));
-    window.dispatchEvent(new Event(EVENT));
-    return true;
+    const all = await apiJson<AllOverrides>("/texts");
+    cache = all && typeof all === "object" ? all : {};
+    emit();
   } catch {
-    return false;
+    /* offline — keep cache */
   }
 }
 
-/** Set (or update) one field's override for a locale. */
+/** Set (or update) one field's override for a locale (PUT, optimistic). */
 export function setTextOverride(locale: Locale, path: string, value: string | number): boolean {
-  const all = loadAllOverrides();
-  all[locale] = { ...(all[locale] ?? {}), [path]: value };
-  return writeAll(all);
+  cache = { ...cache, [locale]: { ...(cache[locale] ?? {}), [path]: value } };
+  emit();
+  if (!canUse()) return true;
+  apiFetch(`/texts/${locale}`, { method: "PUT", json: { path, value } })
+    .then((res) => res.json())
+    .then((saved: LocaleOverrides) => {
+      if (saved && typeof saved === "object") {
+        cache = { ...cache, [locale]: saved };
+        emit();
+      }
+    })
+    .catch(() => {
+      /* keep optimistic copy */
+    });
+  return true;
 }
 
 /** Remove a single field override (revert it to the built-in copy). */
 export function clearTextOverride(locale: Locale, path: string): boolean {
-  const all = loadAllOverrides();
-  if (all[locale]) {
-    delete all[locale]![path];
-    if (Object.keys(all[locale]!).length === 0) delete all[locale];
+  const next: AllOverrides = { ...cache };
+  if (next[locale]) {
+    const localeCopy = { ...next[locale]! };
+    delete localeCopy[path];
+    if (Object.keys(localeCopy).length === 0) delete next[locale];
+    else next[locale] = localeCopy;
   }
-  return writeAll(all);
+  cache = next;
+  emit();
+  if (!canUse()) return true;
+  apiFetch(`/texts/${locale}?path=${encodeURIComponent(path)}`, { method: "DELETE" })
+    .then((res) => res.json())
+    .then((saved: LocaleOverrides) => {
+      if (saved && typeof saved === "object") {
+        cache = { ...cache, [locale]: saved };
+        emit();
+      }
+    })
+    .catch(() => {
+      /* keep optimistic copy */
+    });
+  return true;
 }
 
-/** Revert every text edit for one language. */
+/** Revert every text edit for one language (DELETE, optimistic). */
 export function resetLocaleTexts(locale: Locale): boolean {
-  const all = loadAllOverrides();
-  delete all[locale];
-  return writeAll(all);
+  const next: AllOverrides = { ...cache };
+  delete next[locale];
+  cache = next;
+  emit();
+  if (!canUse()) return true;
+  apiFetch(`/texts/${locale}`, { method: "DELETE" }).catch(() => {
+    /* keep optimistic copy */
+  });
+  return true;
 }
 
-/** Subscribe to text changes from either tab. Returns an unsubscribe fn. */
+/**
+ * Subscribe to text changes. Returns an unsubscribe fn. Hydrates in the
+ * background, listens for same-tab custom events, and opens the SSE stream
+ * (server pushes re-fetch → cache update → cb).
+ */
 export function subscribe(cb: () => void): () => void {
   if (!canUse()) return () => {};
-  const onStorage = (e: StorageEvent) => {
-    if (e.key === KEY) cb();
-  };
-  window.addEventListener("storage", onStorage);
+  void hydrate();
   window.addEventListener(EVENT, cb);
+  const closeSse = sse("/texts/stream", () => {
+    void hydrate().then(cb);
+  });
   return () => {
-    window.removeEventListener("storage", onStorage);
     window.removeEventListener(EVENT, cb);
+    closeSse();
   };
 }
 

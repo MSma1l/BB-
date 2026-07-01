@@ -6,12 +6,12 @@ import { useT } from "@/lib/i18n";
 import { type PhotoGroupId } from "@/content/photos";
 import {
   addPhoto,
-  fileToScaledDataUrl,
   loadGroup,
   removePhoto,
   replacePhoto,
   resetGroup,
   subscribe,
+  uploadPhoto,
 } from "@/lib/photoStore";
 
 interface Group {
@@ -25,8 +25,8 @@ const GROUP_IDS: PhotoGroupId[] = ["profile", "showcase", "gallery"];
  * Admin "Photos" section. The admin can replace, add, or delete images in each
  * group; changes are saved to the shared photo store and show up on the public
  * site immediately (About carousel, Showcase strip, Gallery grid).
- * BACKEND: replacePhoto/addPhoto persist a downscaled data URL in localStorage;
- * swap for a real upload + media URL.
+ * Uploads go through uploadPhoto() (multipart POST → stored media URL); the
+ * group list is then persisted server-side via replacePhoto/addPhoto (PUT).
  */
 export default function PhotosSection() {
   const t = useT();
@@ -62,12 +62,11 @@ export default function PhotosSection() {
     if (!file || !tgt) return;
     setError(false);
     try {
-      // BACKEND: upload `file` and store the returned URL instead of a data URL.
-      const dataUrl = await fileToScaledDataUrl(file);
+      const url = await uploadPhoto(tgt.id, file);
       const ok =
         tgt.mode === "add"
-          ? addPhoto(tgt.id, dataUrl)
-          : replacePhoto(tgt.id, tgt.index, dataUrl);
+          ? addPhoto(tgt.id, url)
+          : replacePhoto(tgt.id, tgt.index, url);
       if (!ok) setError(true);
     } catch {
       setError(true);

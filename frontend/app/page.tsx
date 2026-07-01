@@ -11,6 +11,7 @@ import Process from "@/components/sections/Process";
 import Why from "@/components/sections/Why";
 import Reviews from "@/components/sections/Reviews";
 import ChatWidget from "@/components/chat/ChatWidget";
+import BackgroundMusic from "@/components/BackgroundMusic";
 
 export default function Home() {
   return (
@@ -38,6 +39,9 @@ export default function Home() {
 
       {/* Floating chat widget (reads open-state from the UI context) */}
       <ChatWidget />
+
+      {/* Ambient background music (starts after the intro; toggle bottom-left) */}
+      <BackgroundMusic />
     </div>
   );
 }

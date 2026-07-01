@@ -1,0 +1,70 @@
+// Balloons Breeze backend schema.
+// Models mirror the frozen shapes in frontend/lib/types.ts.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+model Conversation {
+  // id is client-generated (matches the frontend Conversation.id); accept it.
+  id        String        @id
+  first     String
+  last      String
+  phone     String
+  // last-activity epoch ms (BigInt to hold JS timestamps safely)
+  ts        BigInt
+  messages  ChatMessage[]
+  createdAt DateTime      @default(now())
+}
+
+model ChatMessage {
+  id             String       @id
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  // "visitor" | "operator"
+  from           String
+  text           String
+  ts             BigInt
+
+  @@index([conversationId])
+}
+
+// One row per photo group ("profile" | "showcase" | "gallery"); urls is the
+// ordered image list. Absence of a row means "use defaults" (see seed).
+model PhotoGroup {
+  id   String   @id
+  urls String[]
+}
+
+// Per-locale text override, keyed by (locale, dot-path).
+model TextOverride {
+  id     String @id @default(cuid())
+  locale String
+  path   String
+  value  String
+
+  @@unique([locale, path])
+  @@index([locale])
+}
+
+model Review {
+  id       String  @id
+  name     String
+  role     String
+  rating   Float
+  text     String
+  ts       BigInt
+  approved Boolean @default(true)
+}

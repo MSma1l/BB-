@@ -6,7 +6,7 @@ import { Phone, Menu, X } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
 import LangSwitch from "@/components/ui/LangSwitch";
 
-const PHONE = "+37360000000";
+const PHONE = "+37376616384";
 
 export default function Nav() {
   const { t } = useLocale();

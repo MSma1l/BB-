@@ -3,16 +3,18 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { MessageSquare, Images, Type, Bell } from "lucide-react";
+import { MessageSquare, Images, Type, Star, Bell } from "lucide-react";
 import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { loadConversations, subscribe } from "@/lib/chatStore";
+import { usePendingReviews } from "@/lib/reviewStore";
 import LangSwitch from "@/components/ui/LangSwitch";
 import MessagesSection from "@/components/admin/MessagesSection";
 import PhotosSection from "@/components/admin/PhotosSection";
 import TextsSection from "@/components/admin/TextsSection";
+import ReviewsSection from "@/components/admin/ReviewsSection";
 
-type Section = "messages" | "photos" | "texts";
+type Section = "messages" | "photos" | "texts" | "reviews";
 
 /**
  * The "new customer activity" signal. Counts every conversation *and* every
@@ -41,6 +43,7 @@ export default function AdminShell({ onLogout }: { onLogout: () => void }) {
   const [section, setSection] = useState<Section>("messages");
   const [unread, setUnread] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
+  const pendingReviews = usePendingReviews();
 
   // Refs keep the subscribe() callback free of stale closures over t/section.
   const sectionRef = useRef(section);
@@ -86,6 +89,7 @@ export default function AdminShell({ onLogout }: { onLogout: () => void }) {
     { id: "messages", label: t.admin.nav.messages, Icon: MessageSquare, badge: unread },
     { id: "photos", label: t.admin.nav.photos, Icon: Images },
     { id: "texts", label: t.admin.nav.texts, Icon: Type },
+    { id: "reviews", label: t.admin.nav.reviews, Icon: Star, badge: pendingReviews.length },
   ];
 
   return (
@@ -177,8 +181,10 @@ export default function AdminShell({ onLogout }: { onLogout: () => void }) {
           <MessagesSection />
         ) : section === "photos" ? (
           <PhotosSection />
-        ) : (
+        ) : section === "texts" ? (
           <TextsSection />
+        ) : (
+          <ReviewsSection />
         )}
       </main>
 
