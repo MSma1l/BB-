@@ -20,15 +20,14 @@ export default function Gallery() {
   return (
     <section
       id="gallery"
-      style={{ scrollMarginTop: 90, padding: "clamp(70px,9vw,140px) 0" }}
+      style={{ scrollMarginTop: 90, padding: "clamp(38px,9vw,140px) 0" }}
     >
       <div className="mx-auto w-[min(88%,1480px)]">
         <SectionHeading kicker={t.gallery.kicker} title={t.gallery.title} />
 
         {/* grid */}
         <div
-          className="mt-[40px] grid gap-4"
-          style={{ gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))" }}
+          className="mt-7 md:mt-[40px] grid gap-3 md:gap-4 grid-cols-2 md:[grid-template-columns:repeat(auto-fill,minmax(240px,1fr))]"
         >
           {images.map((src, pos) => (
             <Reveal key={`${src}-${pos}`} delay={(pos % 4) * 0.05}>

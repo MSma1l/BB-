@@ -10,7 +10,7 @@ export default function Showcase() {
   const t = useT();
   const showcasePhotos = useSitePhotos("showcase");
   return (
-    <section className="relative" style={{ padding: "clamp(50px,7vw,100px) 0" }}>
+    <section className="relative" style={{ padding: "clamp(28px,7vw,100px) 0" }}>
       <div className="mx-auto w-[min(88%,1480px)]">
         <Reveal
           className="relative overflow-hidden rounded-[10px]"

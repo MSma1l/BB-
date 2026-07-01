@@ -15,7 +15,7 @@ export default function Footer() {
   return (
     <footer
       className="relative overflow-hidden"
-      style={{ padding: "clamp(70px,9vw,130px) 0 50px" }}
+      style={{ padding: "clamp(40px,9vw,130px) 0 50px" }}
     >
       {/* gentle top fade to separate the footer from the section above; the
           sky + balloons (global background) show through the rest */}
@@ -36,7 +36,7 @@ export default function Footer() {
           {f.title}
         </h2>
 
-        <div className="mt-[38px] flex flex-wrap justify-center gap-4">
+        <div className="mt-7 md:mt-[38px] flex flex-wrap justify-center gap-4">
           <a
             href={telHref}
             className="inline-flex items-center gap-[11px] rounded-full px-[34px] py-[17px] text-[15px] font-semibold no-underline bb-gold-btn"
@@ -55,7 +55,7 @@ export default function Footer() {
           </button>
         </div>
 
-        <div className="mt-[34px] flex flex-wrap justify-center gap-[26px] text-[14px] text-sand-deep">
+        <div className="mt-6 md:mt-[34px] flex flex-wrap justify-center gap-[26px] text-[14px] text-sand-deep">
           <a
             href={`mailto:${f.email}`}
             className="inline-flex items-center gap-2 text-sand no-underline"
@@ -67,7 +67,7 @@ export default function Footer() {
           </span>
         </div>
 
-        <div className="mt-[54px] flex items-center justify-center gap-[13px]">
+        <div className="mt-9 md:mt-[54px] flex items-center justify-center gap-[13px]">
           <Image
             src="/assets/logo-bb.jpg"
             alt="Balloons Breeze"

@@ -14,7 +14,7 @@ export default function About() {
     <section
       id="about"
       className="relative overflow-hidden"
-      style={{ scrollMarginTop: 90, padding: "clamp(70px,9vw,140px) 0" }}
+      style={{ scrollMarginTop: 90, padding: "clamp(38px,9vw,140px) 0" }}
     >
       {/* accent glow */}
       <div
@@ -30,7 +30,7 @@ export default function About() {
           className="grid items-center"
           style={{
             gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))",
-            gap: "clamp(34px,5vw,70px)",
+            gap: "clamp(22px,5vw,70px)",
           }}
         >
           {/* text column */}

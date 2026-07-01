@@ -58,7 +58,7 @@ export default function Reviews() {
   return (
     <section
       id="reviews"
-      style={{ scrollMarginTop: 90, padding: "clamp(70px,9vw,140px) 0" }}
+      style={{ scrollMarginTop: 90, padding: "clamp(38px,9vw,140px) 0" }}
     >
       <div className="mx-auto w-[min(88%,1480px)]">
         <SectionHeading kicker={r.kicker} title={r.title} />
@@ -91,7 +91,7 @@ export default function Reviews() {
         ) : null}
 
         <div
-          className="mt-[40px] grid gap-5"
+          className="mt-7 md:mt-[40px] grid gap-4 md:gap-5"
           style={{ gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))" }}
         >
           {all.map((review, i) => (

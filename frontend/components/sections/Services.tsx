@@ -13,7 +13,7 @@ export default function Services() {
       id="services"
       style={{
         scrollMarginTop: 90,
-        padding: "clamp(70px,9vw,140px) 0",
+        padding: "clamp(38px,9vw,140px) 0",
       }}
     >
       <div className="mx-auto w-[min(88%,1480px)]">
@@ -21,12 +21,12 @@ export default function Services() {
 
         {/* Wedding featured block */}
         <Reveal
-          className="mt-[54px] rounded-[14px]"
+          className="mt-9 md:mt-[54px] rounded-[14px]"
           as="div"
         >
           <div
             style={{
-              padding: "clamp(26px,3.5vw,48px)",
+              padding: "clamp(20px,3.5vw,48px)",
               background:
                 "linear-gradient(160deg,rgba(28,14,8,.85),rgba(15,8,16,.85))",
               border: "1px solid rgba(231,178,76,.22)",
@@ -47,7 +47,7 @@ export default function Services() {
             </div>
 
             <div
-              className="mt-[34px] grid gap-[26px]"
+              className="mt-6 md:mt-[34px] grid gap-5 md:gap-[26px]"
               style={{ gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))" }}
             >
               {s.wedding.groups.map((g) => (
@@ -75,7 +75,7 @@ export default function Services() {
             </div>
 
             <div
-              className="mt-[30px] rounded-[10px] px-[22px] py-4 text-center text-[15px] text-gold-300"
+              className="mt-6 md:mt-[30px] rounded-[10px] px-[22px] py-4 text-center text-[15px] text-gold-300"
               style={{
                 background: "rgba(231,178,76,.07)",
                 border: "1px solid rgba(231,178,76,.2)",
@@ -88,7 +88,7 @@ export default function Services() {
 
         {/* Other categories */}
         <div
-          className="mt-6 grid gap-6"
+          className="mt-4 md:mt-6 grid gap-4 md:gap-6"
           style={{ gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))" }}
         >
           {s.others.map((o, i) => (

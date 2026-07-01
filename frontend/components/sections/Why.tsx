@@ -9,11 +9,11 @@ export default function Why() {
   const w = t.why;
 
   return (
-    <section id="why" style={{ scrollMarginTop: 90, padding: "clamp(70px,9vw,140px) 0" }}>
+    <section id="why" style={{ scrollMarginTop: 90, padding: "clamp(38px,9vw,140px) 0" }}>
       <div className="mx-auto w-[min(88%,1480px)]">
         <SectionHeading kicker={w.kicker} title={w.title} />
         <div
-          className="mt-[46px] grid gap-[18px]"
+          className="mt-8 md:mt-[46px] grid gap-3 md:gap-[18px]"
           style={{ gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))" }}
         >
           {w.items.map((item, i) => (

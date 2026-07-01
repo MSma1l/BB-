@@ -16,13 +16,13 @@ export default function Process() {
       id="process"
       style={{
         scrollMarginTop: 90,
-        padding: "clamp(70px,9vw,140px) 0",
+        padding: "clamp(38px,9vw,140px) 0",
       }}
     >
       <div className="mx-auto w-[min(88%,1480px)]">
         <SectionHeading kicker={p.kicker} title={p.title} />
         <div
-          className="mt-[50px] grid gap-[18px]"
+          className="mt-8 md:mt-[50px] grid gap-3 md:gap-[18px]"
           style={{ gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))" }}
         >
           {p.steps.map((title, i) => (
