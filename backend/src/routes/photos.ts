@@ -16,10 +16,20 @@ export const photosRouter = Router();
 const uploadRoot = path.resolve(env.uploadDir);
 fs.mkdirSync(uploadRoot, { recursive: true });
 
+// Allowlist of safe raster image types → fixed extension. Reject everything
+// else (notably SVG/HTML, which could be served as inline stored-XSS from the
+// same origin). The extension comes from this map, never from the filename.
+const ALLOWED_TYPES: Record<string, string> = {
+  "image/jpeg": ".jpg",
+  "image/png": ".png",
+  "image/webp": ".webp",
+  "image/gif": ".gif",
+};
+
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, uploadRoot),
   filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname);
+    const ext = ALLOWED_TYPES[file.mimetype] ?? ".bin";
     cb(null, `${Date.now()}-${crypto.randomBytes(8).toString("hex")}${ext}`);
   },
 });
@@ -28,10 +38,10 @@ const upload = multer({
   storage,
   limits: { fileSize: env.maxUploadMb * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    if (file.mimetype.startsWith("image/")) {
+    if (ALLOWED_TYPES[file.mimetype]) {
       cb(null, true);
     } else {
-      cb(new Error("Only image uploads are allowed"));
+      cb(new Error("Only JPG, PNG, WEBP, or GIF images are allowed"));
     }
   },
 });

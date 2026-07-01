@@ -96,7 +96,13 @@ export default function ChatWidget() {
     }
 
     const now = Date.now();
-    const id = `c${now}`;
+    // Unguessable id: a timestamp id (`c<ms>`) could be enumerated to read other
+    // visitors' threads (name/phone/messages) via the public GET /conversations/:id.
+    const rnd =
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${now}-${Math.random().toString(36).slice(2)}`;
+    const id = `c${rnd}`;
     // Send name + surname + message together: the personalized greeting plus the
     // visitor's first message, published to the shared store for the admin inbox.
     addConversation({

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "../db";
 import { toMs } from "../db";
 import { requireAdmin } from "../middleware/auth";
+import { publicWriteLimiter } from "../middleware/rateLimit";
 import { broadcast, sseHandler } from "../sse";
 
 export const conversationsRouter = Router();
@@ -80,7 +81,7 @@ conversationsRouter.get("/:id", async (req, res) => {
 });
 
 // POST /api/conversations (public) → create conversation + nested messages
-conversationsRouter.post("/", async (req, res) => {
+conversationsRouter.post("/", publicWriteLimiter, async (req, res) => {
   const parsed = conversationSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid conversation payload" });

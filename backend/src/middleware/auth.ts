@@ -15,9 +15,9 @@ export function signAdminToken(payload: AdminPayload): string {
   return jwt.sign(payload, env.jwtSecret, options);
 }
 
-/** Verify + decode an admin token, or throw. */
+/** Verify + decode an admin token, or throw. Algorithm pinned to HS256. */
 export function verifyAdminToken(token: string): AdminPayload {
-  return jwt.verify(token, env.jwtSecret) as AdminPayload;
+  return jwt.verify(token, env.jwtSecret, { algorithms: ["HS256"] }) as AdminPayload;
 }
 
 declare global {

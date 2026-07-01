@@ -1,0 +1,48 @@
+# Production override for docker-compose.yml.
+#
+# Usage (from the repo root, with a production .env in place):
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+#
+# What this override changes vs. the base compose file:
+#   1. Binds the web (nginx) port to LOOPBACK ONLY (127.0.0.1) so the app is
+#      reachable exclusively through the HOST reverse proxy (see
+#      deploy/nginx-host.conf.example) and never directly from the internet.
+#   2. Adds a real /api/health healthcheck to the backend and gates `web` on it
+#      (condition: service_healthy) so nginx only starts once the API is live.
+#   3. restart: unless-stopped stays on every service (inherited from the base,
+#      re-stated here for clarity — merge is a no-op).
+#
+# NOTE: db and backend are NOT published to the host in either file — they live
+# on the internal `bbnet` bridge (db via its default port, backend via `expose`).
+# This override deliberately does not add any host ports for them.
+
+services:
+  db:
+    restart: unless-stopped
+
+  backend:
+    restart: unless-stopped
+    # node:20-slim ships with neither curl nor wget, but Node 20 has a global
+    # fetch(). Exit 0 only when GET /api/health responds ok.
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://localhost:4000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  web:
+    restart: unless-stopped
+    # Only the host reverse proxy (on the same box) can reach this. The public
+    # internet hits nginx on 80/443, which proxies to 127.0.0.1:${WEB_PORT}.
+    ports:
+      - "127.0.0.1:${WEB_PORT:-8080}:80"
+    # Wait for the API to be healthy before starting nginx (overrides the base
+    # `depends_on: [backend]` list form with the long form + condition).
+    depends_on:
+      backend:
+        condition: service_healthy

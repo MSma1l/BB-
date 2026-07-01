@@ -4,6 +4,7 @@ import { z } from "zod";
 import { prisma } from "../db";
 import { env } from "../env";
 import { requireAdmin, signAdminToken } from "../middleware/auth";
+import { loginLimiter } from "../middleware/rateLimit";
 
 export const authRouter = Router();
 
@@ -13,7 +14,7 @@ const loginSchema = z.object({
 });
 
 // POST /api/admin/login → { token, expiresIn }
-authRouter.post("/login", async (req, res) => {
+authRouter.post("/login", loginLimiter, async (req, res) => {
   const parsed = loginSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "username and password are required" });

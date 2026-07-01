@@ -12,6 +12,9 @@ import { contentRouter } from "./routes/content";
 export function createApp() {
   const app = express();
 
+  // Behind nginx: trust the first proxy so req.ip / rate-limiting see the real client IP.
+  app.set("trust proxy", 1);
+
   app.use(cors({ origin: env.corsOrigin === "*" ? true : env.corsOrigin.split(",") }));
   app.use(express.json({ limit: "2mb" }));
 

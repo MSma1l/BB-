@@ -15,12 +15,25 @@ export default function IntroPreloader() {
 
   const end = () => {
     setFading(true);
+    // Land on the Hero (top) when the intro clears — the site always opens there.
+    if (!window.location.hash) window.scrollTo(0, 0);
     // Signal the intro is over so ambient music can start (see BackgroundMusic).
     window.dispatchEvent(new Event("bb-intro-done"));
     window.setTimeout(() => setGone(true), 600);
   };
 
   useEffect(() => {
+    // Always open at the top (Hero): stop the browser restoring a prior scroll
+    // position on reload, and pin to the top on first load.
+    try {
+      if ("scrollRestoration" in window.history) {
+        window.history.scrollRestoration = "manual";
+      }
+    } catch {
+      /* ignore */
+    }
+    if (!window.location.hash) window.scrollTo(0, 0);
+
     // Safety net in case the video never fires `ended`.
     capRef.current = window.setTimeout(end, 10000);
     return () => window.clearTimeout(capRef.current);

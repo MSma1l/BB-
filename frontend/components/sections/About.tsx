@@ -3,7 +3,6 @@
 import { useT } from "@/lib/i18n";
 import Reveal from "@/components/ui/Reveal";
 import Carousel from "@/components/ui/Carousel";
-import PromoVideo from "@/components/ui/PromoVideo";
 import { useSitePhotos } from "@/lib/photoStore";
 
 export default function About() {
@@ -121,13 +120,6 @@ export default function About() {
             </div>
           </Reveal>
         </div>
-
-        {/* Promo reel — muted, looping. Hidden until /assets/promo.mp4 exists. */}
-        <Reveal delay={0.05}>
-          <div className="mt-[clamp(34px,6vw,80px)]">
-            <PromoVideo />
-          </div>
-        </Reveal>
       </div>
     </section>
   );

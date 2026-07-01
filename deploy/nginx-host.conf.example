@@ -1,0 +1,105 @@
+# =============================================================================
+# HOST nginx reverse proxy for Balloons Breeze
+# =============================================================================
+# This runs on the SERVER's own nginx (installed on the host with apt), NOT the
+# nginx inside the `web` Docker container. It terminates TLS for your public
+# domain and forwards plain HTTP to the loopback-bound web container published by
+# docker-compose.prod.yml at 127.0.0.1:8080.
+#
+#   Internet ──443/TLS──▶ host nginx (this file) ──▶ 127.0.0.1:8080 ──▶ web
+#                                                       (docker web/nginx)
+#                                                          ├─ static export
+#                                                          ├─ /api/     → backend:4000
+#                                                          └─ /uploads/ → backend:4000
+#
+# SETUP
+#   1. Replace every "your-domain.com" below with your real domain.
+#   2. Copy to the host:  sudo cp deploy/nginx-host.conf.example \
+#                            /etc/nginx/sites-available/balloons-breeze.conf
+#   3. Enable it:         sudo ln -s /etc/nginx/sites-available/balloons-breeze.conf \
+#                            /etc/nginx/sites-enabled/
+#   4. Obtain TLS certs with certbot (see the HTTPS block comment below), then:
+#                         sudo nginx -t && sudo systemctl reload nginx
+#
+# If WEB_PORT in your .env is not 8080, change the two proxy_pass ports below.
+# =============================================================================
+
+# --- Port 80: redirect everything to HTTPS, but keep serving ACME challenges. --
+server {
+    listen 80;
+    listen [::]:80;
+    server_name your-domain.com;
+
+    # Let's Encrypt / certbot writes its HTTP-01 challenge files here. Serve them
+    # over plain HTTP so cert issuance and renewals succeed before the redirect.
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    # Everything else goes to HTTPS.
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+# --- Port 443: TLS termination + reverse proxy to the web container. ----------
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name your-domain.com;
+
+    # Let's Encrypt certificate paths (created by the certbot command below).
+    #
+    #   Install:  sudo apt install -y certbot python3-certbot-nginx
+    #   Issue:    sudo certbot --nginx -d your-domain.com
+    #             (certbot can also edit this file for you; the paths it writes
+    #              match the ones below). Renewals run automatically via the
+    #              certbot systemd timer — test with: sudo certbot renew --dry-run
+    ssl_certificate     /etc/letsencrypt/live/your-domain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/your-domain.com/privkey.pem;
+    include             /etc/letsencrypt/options-ssl-nginx.conf;      # sane TLS defaults
+    ssl_dhparam         /etc/letsencrypt/ssl-dhparams.pem;
+
+    # Photo uploads: MAX_UPLOAD_MB=8 in .env, so allow a bit more for multipart
+    # overhead. Must exceed 8m or uploads fail at the host proxy with 413.
+    client_max_body_size 12m;
+
+    # -------------------------------------------------------------------------
+    # /api/ — SSE-critical. The app uses EventSource streams (chat, photos,
+    # texts, reviews). These MUST NOT be buffered or the client never receives
+    # events until the connection closes. The docker web/nginx already streams
+    # correctly; we must not re-buffer them here at the host edge.
+    # -------------------------------------------------------------------------
+    location /api/ {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # SSE essentials: keep-alive upstream, no buffering/caching, long read.
+        proxy_set_header Connection "";
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_read_timeout 3600s;
+        proxy_send_timeout 3600s;
+    }
+
+    # -------------------------------------------------------------------------
+    # Everything else (static site, /uploads/, /admin-bb/ — the container's
+    # nginx handles routing, Basic Auth on /admin-bb, and the /uploads proxy).
+    # -------------------------------------------------------------------------
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Safe defaults for the /admin-bb Basic Auth prompt and normal requests.
+        proxy_buffering on;
+    }
+}

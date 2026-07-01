@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../db";
 import { requireAdmin } from "../middleware/auth";
+import { publicWriteLimiter } from "../middleware/rateLimit";
 import { broadcast, sseHandler } from "../sse";
 
 export const reviewsRouter = Router();
@@ -48,7 +49,7 @@ reviewsRouter.get("/", async (_req, res) => {
 });
 
 // POST /api/reviews (public) → create a review
-reviewsRouter.post("/", async (req, res) => {
+reviewsRouter.post("/", publicWriteLimiter, async (req, res) => {
   const parsed = createSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid review payload" });

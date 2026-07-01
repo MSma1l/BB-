@@ -11,6 +11,22 @@ function required(name: string, fallback?: string): string {
 
 const isProd = process.env.NODE_ENV === "production";
 
+// Values that must never be used in production (they ship in the repo / are
+// well-known). Fail fast so a real deploy can't run with a forgeable secret.
+const KNOWN_WEAK_SECRETS = new Set([
+  "dev-insecure-secret-change-me",
+  "change-me-to-a-long-random-string",
+]);
+if (isProd) {
+  const s = process.env.JWT_SECRET ?? "";
+  if (s === "" || KNOWN_WEAK_SECRETS.has(s) || s.length < 16) {
+    throw new Error(
+      "Refusing to start in production with a missing/weak JWT_SECRET. " +
+        "Set a strong unique value, e.g. `openssl rand -hex 32`.",
+    );
+  }
+}
+
 export const env = {
   nodeEnv: process.env.NODE_ENV ?? "development",
   isProd,
