@@ -74,9 +74,10 @@ frontend/
   components/        # React UI components (layout, sections, hero, chat, ui)
   content/           # Typed mock data — THE backend handoff boundary
     i18n/            # RU / RO / EN translation tables
-  lib/               # Providers (i18n, ui), types, theme tokens, utils
+  lib/               # Providers (i18n, ui), types, theme tokens, utils,
+                     #   and the localStorage "stores" (chat, photos, text, reviews)
   public/assets/     # Logo, nebula background, intro video
-                     # public/uploads/ — drop real event photos here (see ARCHITECTURE §8)
+  public/photos/     # Real event photos (profile / showcase / gallery defaults)
 ```
 
 ---

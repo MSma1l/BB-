@@ -59,10 +59,13 @@ The admin lives at the route **`/admin-bb`**.
 `frontend/components/admin/MessagesSection.tsx` + `AdminShell.tsx` (admin).
 
 **Now:** conversations live in `localStorage` under key `bb_conversations`.
-Customer submits an intake form (name, surname, phone) → a `Conversation` is
-created; each message is appended. The admin inbox mirrors the same store and
-shows a **toast + unread badge** when new customer activity arrives. Cross-tab
-sync is done with the browser `storage` event. **There are no seeded/demo
+Customer submits an intake form (**first name, surname, phone, and a first
+message** — each field validated, with an inline "sent" confirmation) → a
+`Conversation` is created, seeded with an operator greeting plus the visitor's
+message; each later message is appended. The admin inbox mirrors the same store
+and shows a **toast + unread badge** when new customer activity arrives. Message
+timestamps render in the viewer's local time (`formatTime`). Cross-tab sync is
+done with the browser `storage` event. **There are no seeded/demo
 conversations** — only ones real visitors start.
 
 **Do — replace these exported functions in `chatStore.ts`:**
@@ -168,9 +171,12 @@ Shapes are in `lib/types.ts` (`ServiceGroup`, `ServiceCategory`, `Review`).
 (The gallery is now an editable photo group — see #3 — not a separate accessor.)
 
 **Visitor reviews:** `getReviews` above returns the built-in testimonials (from the
-dictionary, editable in the admin). Visitors can also **submit their own** reviews,
-stored in `frontend/lib/reviewStore.ts` (`loadReviews`/`addReview`/`removeReview`/
-`subscribe`) and shown alongside the built-ins. Swap it for a real API and add a
+dictionary, editable in the admin). Visitors can also **submit their own** reviews via
+the form in the Reviews section — name, event/role, a **half-star rating (0.5 steps,
+1–5)**, and text — stored in `frontend/lib/reviewStore.ts`
+(`loadReviews`/`addReview`/`removeReview`/`subscribe`, key `bb_reviews`) and shown
+alongside the built-ins. Visitor reviews are stored **as written** (not auto-translated),
+so they appear the same across all three locales. Swap it for a real API and add a
 **moderation** step — approve/reject before publishing, and de-dupe/spam-guard.
 `removeReview(id)` is already there to back an admin moderation UI.
 

@@ -41,21 +41,26 @@ components/
 content/                     # ⭐ THE BACKEND HANDOFF BOUNDARY ⭐ (+ lib/*Store.ts)
   i18n/
     ru.ts  ro.ts  en.ts      # translation tables (ported from the DC `T` object)
-    index.ts                 # locale → table map + types
+    index.ts                 # locale → table map + getDictionary()
   photos.ts                  # default photo lists (profile / showcase / gallery)
-  reviews.ts                 # client reviews
+  reviews.ts                 # getReviews() accessor over the built-in testimonials
   services.ts                # services / wedding groups
-# localStorage-backed stores (admin-editable, see BACKEND_TODO.md):
-#   lib/chatStore.ts (conversations)  lib/photoStore.ts (photos)  lib/contentStore.ts (text)
 
 lib/
-  types.ts                   # shared TS interfaces (Review, GalleryItem, Conversation…)
-  hooks/                     # useLocale, useLightbox, etc.
-  utils.ts                   # formatTime, initials, classnames helper
+  types.ts                   # shared TS interfaces (Review, Conversation, Dictionary…)
+  i18n.tsx                   # LocaleProvider / useLocale / useT (+ text-override merge)
+  ui.tsx                     # UIProvider (chat-open flag, balloon burst signal)
+  auth.ts                    # TEMPORARY client-side admin login (backend swap point)
+  theme.ts  utils.ts         # design tokens; formatTime / initials / cn helpers
+  # localStorage-backed stores (admin- & visitor-editable, see BACKEND_TODO.md):
+  chatStore.ts               #   chat conversations + admin inbox
+  photoStore.ts              #   admin-editable site photos (profile/showcase/gallery)
+  contentStore.ts            #   admin-editable site text (all copy, per locale)
+  reviewStore.ts             #   visitor-submitted reviews
 
 public/
   assets/                    # logo-bb.jpg, nebula-bg.jpg, intro.mp4
-  uploads/                   # real client photos/videos to wire into the gallery
+  photos/                    # real event photos (profile / showcase / gallery defaults)
 ```
 
 ---
@@ -98,12 +103,29 @@ export async function getReviews(): Promise<Review[]> {
 ### Chat & admin (special case)
 The chat widget and admin panel are **fully built UI over a shared `localStorage` store**
 (`lib/chatStore.ts`). Conversations are **only** the ones visitors start via the chat intake
-form — there are no seeded/hardcoded threads. Because the customer page (`/`) and admin
-(`/admin-bb`) are separate documents, they sync through `localStorage` + the browser's
-cross-tab `storage` event: a customer's new thread/message appears in the admin inbox live
-(with a toast + unread badge), and operator replies flow back to the customer's widget.
-The backend dev replaces `load`/`save` in `chatStore.ts` with a real API + websocket/SSE —
-the component contract (`Conversation[]` + `subscribe(cb)`) is untouched. Tagged `// BACKEND:`.
+form — there are no seeded/hardcoded threads. The intake form collects **first name, surname,
+phone, and a first message** (all validated per-field, with an inline confirmation on send);
+that seeds the conversation with an operator greeting plus the visitor's message. Because the
+customer page (`/`) and admin (`/admin-bb`) are separate documents, they sync through
+`localStorage` + the browser's cross-tab `storage` event: a customer's new thread/message
+appears in the admin inbox live (with a toast + unread badge), and operator replies flow back
+to the customer's widget. Message timestamps render in the **viewer's local time**
+(`formatTime`, client-only so no hydration mismatch). The backend dev replaces `load`/`save`
+in `chatStore.ts` with a real API + websocket/SSE — the component contract (`Conversation[]`
++ `subscribe(cb)`) is untouched. Tagged `// BACKEND:`.
+
+### Admin CMS & visitor reviews (localStorage stores)
+Beyond chat, three more stores back live-editable content, all following the same
+`load`/`save` + `subscribe(cb)` contract (swap the insides, keep the signatures):
+- **`lib/photoStore.ts`** — admin add/replace/delete of site photos (three groups); consumed
+  via `useSitePhotos(groupId)`. Picked files are downscaled to base64 data URLs for demo
+  persistence (backend uploads the real `File`).
+- **`lib/contentStore.ts`** — admin edits to **every string**, per locale, stored as
+  dot-path overrides and overlaid on the shipped dictionary by `mergeDictionary()` in the
+  i18n provider (includes the contact phone/email).
+- **`lib/reviewStore.ts`** — **visitor-submitted reviews** (name, event/role, half-star
+  rating in 0.5 steps, text), shown alongside the built-in testimonials. `removeReview(id)`
+  is present to back an admin moderation UI once there's a backend.
 
 ---
 
@@ -146,11 +168,12 @@ the component contract (`Conversation[]` + `subscribe(cb)`) is untouched. Tagged
 
 Append one line per non-obvious decision. Newest at top.
 
-- **Admin moved to its own `/admin` route, behind a temporary client-side login**
+- **Admin moved to its own `/admin-bb` route, behind a temporary client-side login**
   (`lib/auth.ts`). Static/no-backend means any client check is deterrence, not
   security — so `login()` is the documented swap point for real backend auth, and
-  `/admin` is the natural path to protect at the host (Vercel/Netlify/Cloudflare
-  Access). The public footer no longer links to it; the route is `noindex`.
+  `/admin-bb` is the natural path to protect at the host (Vercel/Netlify/Cloudflare
+  Access). The public footer no longer links to it; the route is `noindex`
+  (`app/admin-bb/layout.tsx` sets `robots: { index: false, follow: false }`).
 - **i18n via client-side React context, not next-intl URL routing** — static
   export (`output: 'export'`) cannot run next-intl's locale middleware, and the
   prototype switched language instantly client-side. Copy still lives as typed
