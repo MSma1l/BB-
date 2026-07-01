@@ -22,8 +22,7 @@ export default function Process() {
       <div className="mx-auto w-[min(88%,1480px)]">
         <SectionHeading kicker={p.kicker} title={p.title} />
         <div
-          className="mt-8 md:mt-[50px] grid gap-3 md:gap-[18px]"
-          style={{ gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))" }}
+          className="mt-8 md:mt-[50px] grid gap-3 md:gap-[18px] grid-cols-2 md:[grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]"
         >
           {p.steps.map((title, i) => (
             <Reveal key={title} delay={i * 0.06}>

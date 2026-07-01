@@ -47,8 +47,7 @@ export default function Services() {
             </div>
 
             <div
-              className="mt-6 md:mt-[34px] grid gap-5 md:gap-[26px]"
-              style={{ gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))" }}
+              className="mt-6 md:mt-[34px] grid gap-4 md:gap-[26px] grid-cols-2 md:[grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]"
             >
               {s.wedding.groups.map((g) => (
                 <div
@@ -88,8 +87,7 @@ export default function Services() {
 
         {/* Other categories */}
         <div
-          className="mt-4 md:mt-6 grid gap-4 md:gap-6"
-          style={{ gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))" }}
+          className="mt-4 md:mt-6 grid gap-4 md:gap-6 grid-cols-2 md:[grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]"
         >
           {s.others.map((o, i) => (
             <Reveal key={o.title} delay={i * 0.06}>
