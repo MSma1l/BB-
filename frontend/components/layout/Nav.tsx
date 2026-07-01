@@ -43,14 +43,8 @@ export default function Nav() {
               className="h-10 w-10 rounded-full object-cover md:h-12 md:w-12"
               style={{ mixBlendMode: "screen" }}
             />
-            <span
-              className="font-display font-semibold uppercase text-gold-200"
-              style={{ fontSize: 22, letterSpacing: "0.2em" }}
-            >
-              <span className="hidden md:inline">Balloons Breeze</span>
-              <span className="md:hidden" style={{ fontSize: 17 }}>
-                B. Breeze
-              </span>
+            <span className="whitespace-nowrap font-display font-semibold uppercase text-gold-200 text-[15px] tracking-[0.1em] md:text-[22px] md:tracking-[0.2em]">
+              Balloons Breeze
             </span>
           </a>
 
