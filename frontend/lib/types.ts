@@ -196,6 +196,8 @@ export interface Dictionary {
     nav: { messages: string; photos: string };
     /** Phone label in the conversation header. */
     phoneLabel: string;
+    /** Toast prefix when a new customer message arrives, e.g. "New message from". */
+    newMessage: string;
     /** Photo-management section. */
     photos: {
       title: string;

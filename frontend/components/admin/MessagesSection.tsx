@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, Send, Phone } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
 import { getSeedConversations } from "@/content/chat";
+import { appendMessage, loadConversations, seedIfEmpty, subscribe } from "@/lib/chatStore";
 import { formatTime, initials } from "@/lib/utils";
 import type { Conversation } from "@/lib/types";
 
@@ -17,8 +18,13 @@ export default function MessagesSection() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const nextId = useRef(1);
 
+  // Seed demo threads on first ever load, then mirror the shared store — new
+  // customer messages (even from another tab) flow in live via subscribe().
   useEffect(() => {
-    setConversations(getSeedConversations(locale));
+    seedIfEmpty(getSeedConversations(locale));
+    const refresh = () => setConversations(loadConversations());
+    refresh();
+    return subscribe(refresh);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -36,20 +42,9 @@ export default function MessagesSection() {
     const text = draft.trim();
     if (!text || !activeId) return;
     const ts = Date.now();
-    setConversations((prev) =>
-      prev.map((c) =>
-        c.id === activeId
-          ? {
-              ...c,
-              ts,
-              messages: [
-                ...c.messages,
-                { id: `o${nextId.current++}`, from: "operator", text, ts },
-              ],
-            }
-          : c,
-      ),
-    );
+    // Persist to the shared store; the subscribe() above refreshes our view and
+    // the customer's chat widget picks the reply up in their tab.
+    appendMessage(activeId, { id: `o${nextId.current++}`, from: "operator", text, ts });
     setDraft("");
   };
 

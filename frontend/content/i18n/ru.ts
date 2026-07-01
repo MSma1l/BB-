@@ -226,6 +226,7 @@ export const ru: Dictionary = {
     logout: "Выйти",
     nav: { messages: "Сообщения", photos: "Фотографии" },
     phoneLabel: "Телефон",
+    newMessage: "Новое сообщение от",
     photos: {
       title: "Фотографии сайта",
       intro: "Управляйте изображениями, которые отображаются на сайте.",

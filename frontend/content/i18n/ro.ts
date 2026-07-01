@@ -234,6 +234,7 @@ export const ro: Dictionary = {
     logout: "Deconectare",
     nav: { messages: "Mesaje", photos: "Fotografii" },
     phoneLabel: "Telefon",
+    newMessage: "Mesaj nou de la",
     photos: {
       title: "Fotografiile site-ului",
       intro: "Gestionează imaginile afișate pe site.",

@@ -224,6 +224,7 @@ export const en: Dictionary = {
     logout: "Log out",
     nav: { messages: "Messages", photos: "Photos" },
     phoneLabel: "Phone",
+    newMessage: "New message from",
     photos: {
       title: "Site photos",
       intro: "Manage the images shown on the site.",

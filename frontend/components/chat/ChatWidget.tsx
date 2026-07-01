@@ -6,10 +6,15 @@ import { MessageCircle, X, Send } from "lucide-react";
 import { useT } from "@/lib/i18n";
 import { useUI } from "@/lib/ui";
 import { formatTime } from "@/lib/utils";
+import {
+  addConversation,
+  appendMessage,
+  getMyConversationId,
+  loadConversations,
+  setMyConversationId,
+  subscribe,
+} from "@/lib/chatStore";
 import type { ChatMessage, Dictionary } from "@/lib/types";
-
-// Fixed seed timestamp keeps SSR and first client paint identical.
-const SEED_TS = Date.UTC(2026, 5, 29, 14, 0, 0);
 
 interface Contact {
   first: string;
@@ -29,18 +34,31 @@ export default function ChatWidget() {
   const [contact, setContact] = useState<Contact | null>(null);
   const [form, setForm] = useState<Contact>({ first: "", last: "", phone: "" });
   const [draft, setDraft] = useState("");
+  const [convId, setConvId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const nextId = useRef(1);
 
-  // Keep the seeded greeting localized (and named) if the language changes.
+  // Resume this visitor's own conversation after a reload (post-mount, so the
+  // first client paint still matches the server-rendered intake form).
   useEffect(() => {
-    setMessages((prev) =>
-      prev.map((m) =>
-        m.id === "greet" ? { ...m, text: buildGreeting(t, contact) } : m,
-      ),
-    );
-  }, [t, contact]);
+    const id = getMyConversationId();
+    if (!id) return;
+    const mine = loadConversations().find((c) => c.id === id);
+    if (mine) {
+      setConvId(id);
+      setContact({ first: mine.first, last: mine.last, phone: mine.phone });
+    }
+  }, []);
+
+  // Mirror this conversation's messages from the shared store, and stay in sync
+  // when the admin replies (from the other tab) or we send a new message.
+  useEffect(() => {
+    if (!convId) return;
+    const refresh = () =>
+      setMessages(loadConversations().find((c) => c.id === convId)?.messages ?? []);
+    refresh();
+    return subscribe(refresh);
+  }, [convId]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
@@ -54,19 +72,25 @@ export default function ChatWidget() {
       phone: form.phone.trim(),
     };
     if (!c.first || !c.last || !c.phone) return;
+    const now = Date.now();
+    const id = `c${now}`;
+    // Seed the thread with the personalized operator greeting, then publish it
+    // to the shared store where the admin inbox picks it up immediately.
+    addConversation({
+      id,
+      ...c,
+      ts: now,
+      messages: [{ id: "greet", from: "operator", text: buildGreeting(t, c), ts: now }],
+    });
+    setMyConversationId(id);
+    setConvId(id);
     setContact(c);
-    setMessages([
-      { id: "greet", from: "operator", text: buildGreeting(t, c), ts: SEED_TS },
-    ]);
   };
 
   const send = () => {
     const text = draft.trim();
-    if (!text) return;
-    setMessages((prev) => [
-      ...prev,
-      { id: `v${nextId.current++}`, from: "visitor", text, ts: Date.now() },
-    ]);
+    if (!text || !convId) return;
+    appendMessage(convId, { id: `v${Date.now()}`, from: "visitor", text, ts: Date.now() });
     setDraft("");
   };
 
