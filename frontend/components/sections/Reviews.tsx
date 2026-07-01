@@ -9,15 +9,25 @@ import type { Review } from "@/lib/types";
 import SectionHeading from "@/components/ui/SectionHeading";
 import Reveal from "@/components/ui/Reveal";
 
-function Stars({ rating }: { rating: number }) {
-  // Four solid stars + a fifth that dims when the rating is below 5.
-  const ops = [1, 1, 1, 1, rating >= 5 ? 1 : 0.3];
+/** One star filled 0..1 of its width (supports halves), over a dim outline. */
+function StarIcon({ fill, size = 16 }: { fill: number; size?: number }) {
+  const pct = Math.max(0, Math.min(1, fill)) * 100;
   return (
-    <div className="flex gap-[3px]">
-      {ops.map((op, i) => (
-        <span key={i} className="text-[16px] text-gold-400" style={{ opacity: op }}>
-          ★
-        </span>
+    <span className="relative inline-block align-middle" style={{ width: size, height: size }}>
+      <Star size={size} className="absolute inset-0 text-gold-400" fill="none" style={{ opacity: 0.35 }} />
+      <span className="absolute inset-0 overflow-hidden" style={{ width: `${pct}%` }}>
+        <Star size={size} className="text-gold-400" fill="currentColor" />
+      </span>
+    </span>
+  );
+}
+
+/** Read-only rating display: 5 stars (with halves) + the numeric value. */
+function Stars({ rating }: { rating: number }) {
+  return (
+    <div className="flex items-center gap-[3px]">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <StarIcon key={i} fill={rating - (i - 1)} size={16} />
       ))}
       <span className="ml-2 text-[13px] text-sand-deep">{rating.toFixed(1)}</span>
     </div>
@@ -215,25 +225,35 @@ function ReviewForm({
   );
 }
 
+/** Interactive rating: click a star's left half for X.5, right half for X.0. */
 function RatingInput({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const [hover, setHover] = useState<number | null>(null);
+  const shown = hover ?? value;
+  const size = 26;
   return (
-    <div className="flex gap-1">
-      {[1, 2, 3, 4, 5].map((n) => (
-        <button
-          key={n}
-          type="button"
-          onClick={() => onChange(n)}
-          aria-label={`${n}`}
-          className="cursor-pointer border-none bg-transparent p-0.5 leading-none"
-        >
-          <Star
-            size={22}
-            className="text-gold-400"
-            fill={n <= value ? "currentColor" : "none"}
-            style={{ opacity: n <= value ? 1 : 0.4 }}
-          />
-        </button>
-      ))}
+    <div className="flex items-center gap-1.5" onMouseLeave={() => setHover(null)}>
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <span key={i} className="relative inline-block" style={{ width: size, height: size }}>
+            <StarIcon fill={shown - (i - 1)} size={size} />
+            <button
+              type="button"
+              aria-label={`${i - 0.5}`}
+              onMouseEnter={() => setHover(i - 0.5)}
+              onClick={() => onChange(i - 0.5)}
+              className="absolute left-0 top-0 h-full w-1/2 cursor-pointer border-none bg-transparent p-0"
+            />
+            <button
+              type="button"
+              aria-label={`${i}`}
+              onMouseEnter={() => setHover(i)}
+              onClick={() => onChange(i)}
+              className="absolute right-0 top-0 h-full w-1/2 cursor-pointer border-none bg-transparent p-0"
+            />
+          </span>
+        ))}
+      </div>
+      <span className="text-[13px] text-sand-deep">{shown.toFixed(1)}</span>
     </div>
   );
 }
