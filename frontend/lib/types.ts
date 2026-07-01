@@ -161,6 +161,7 @@ export interface Dictionary {
       submit: string;
       cancel: string;
       thanks: string;
+      empty: string;
     };
   };
   footer: {

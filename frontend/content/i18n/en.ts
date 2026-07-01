@@ -145,44 +145,8 @@ export const en: Dictionary = {
   reviews: {
     kicker: "Client reviews",
     title: "Emotions that stay",
-    list: [
-      {
-        name: "Elena & Andrei",
-        role: "Wedding, Chișinău",
-        rating: 5,
-        text: "Our wedding turned into a fairytale. The balloon and flower arch was a true work of art. Thank you for the care in every detail!",
-      },
-      {
-        name: "Marina Crudu",
-        role: "Anniversary",
-        rating: 5,
-        text: "We ordered the décor for my mum's anniversary — the guests were delighted. Everything stylish, luxe and tasteful.",
-      },
-      {
-        name: "Victoria P.",
-        role: "Wedding",
-        rating: 5,
-        text: "Alex and the team read the mood instantly. It turned out even better than we dreamed.",
-      },
-      {
-        name: "Sergiu & Ana",
-        role: "Showroom opening",
-        rating: 5,
-        text: "They organized our showroom opening turnkey. Professional, right on time, no extra questions.",
-      },
-      {
-        name: "Daria Kovalciuc",
-        role: "Photo zone",
-        rating: 5,
-        text: "The photo zone was the highlight of the night — every shot came out magical.",
-      },
-      {
-        name: "Cristina T.",
-        role: "Wedding",
-        rating: 4.5,
-        text: "Premium materials, modern design and full transparency. I recommend them wholeheartedly.",
-      },
-    ],
+    // Testimonials are visitor-submitted (lib/reviewStore.ts); no seeded ones.
+    list: [],
     form: {
       add: "Leave a review",
       title: "Share your experience",
@@ -193,6 +157,7 @@ export const en: Dictionary = {
       submit: "Submit review",
       cancel: "Cancel",
       thanks: "Thank you for your review!",
+      empty: "No reviews yet. Be the first!",
     },
   },
   footer: {

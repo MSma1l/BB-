@@ -64,6 +64,9 @@ export default function Reviews() {
         <SectionHeading kicker={r.kicker} title={r.title} />
 
         {/* leave-a-review control */}
+        {all.length === 0 && !open && !thanks ? (
+          <p className="mt-6 text-center text-[14px] text-muted">{r.form.empty}</p>
+        ) : null}
         <div className="mt-8 flex justify-center">
           {thanks ? (
             <div

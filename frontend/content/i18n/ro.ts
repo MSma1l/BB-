@@ -155,44 +155,8 @@ export const ro: Dictionary = {
   reviews: {
     kicker: "Recenziile clienților",
     title: "Emoții care rămân",
-    list: [
-      {
-        name: "Elena și Andrei",
-        role: "Nuntă, Chișinău",
-        rating: 5,
-        text: "Nunta noastră s-a transformat într-o poveste. Arcada din baloane și flori a fost o adevărată operă de artă. Mulțumim pentru grija la fiecare detaliu!",
-      },
-      {
-        name: "Marina Crudu",
-        role: "Aniversare",
-        rating: 5,
-        text: "Am comandat amenajarea pentru aniversarea mamei — invitații au fost încântați. Totul cu stil, scump și cu gust.",
-      },
-      {
-        name: "Victoria P.",
-        role: "Nuntă",
-        rating: 5,
-        text: "Alex și echipa simt atmosfera din jumătate de cuvânt. A ieșit chiar mai bine decât am visat.",
-      },
-      {
-        name: "Sergiu și Ana",
-        role: "Deschidere showroom",
-        rating: 5,
-        text: "Au organizat deschiderea showroom-ului nostru la cheie. Profesionist, exact la timp, fără întrebări în plus.",
-      },
-      {
-        name: "Daria Kovalciuc",
-        role: "Foto-zonă",
-        rating: 5,
-        text: "Foto-zona a fost vedeta serii — toate pozele au ieșit magice.",
-      },
-      {
-        name: "Cristina T.",
-        role: "Nuntă",
-        rating: 4.5,
-        text: "Materiale premium, design modern și transparență totală. Recomand din toată inima.",
-      },
-    ],
+    // Testimonials are visitor-submitted (lib/reviewStore.ts); no seeded ones.
+    list: [],
     form: {
       add: "Lasă o recenzie",
       title: "Împărtășește experiența ta",
@@ -203,6 +167,7 @@ export const ro: Dictionary = {
       submit: "Trimite recenzia",
       cancel: "Anulează",
       thanks: "Mulțumim pentru recenzie!",
+      empty: "Încă nu există recenzii. Fii primul!",
     },
   },
   footer: {
