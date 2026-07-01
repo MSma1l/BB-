@@ -3,11 +3,12 @@
 import { useT } from "@/lib/i18n";
 import Reveal from "@/components/ui/Reveal";
 import Carousel from "@/components/ui/Carousel";
-import { showcasePhotos } from "@/content/photos";
+import { useSitePhotos } from "@/lib/photoStore";
 
 /** Wide image strip between About and Services (2nd placeholder zone). */
 export default function Showcase() {
   const t = useT();
+  const showcasePhotos = useSitePhotos("showcase");
   return (
     <section className="relative" style={{ padding: "clamp(50px,7vw,100px) 0" }}>
       <div className="mx-auto w-[min(88%,1480px)]">

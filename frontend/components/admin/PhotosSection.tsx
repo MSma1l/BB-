@@ -1,52 +1,67 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Upload } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Upload, RotateCcw } from "lucide-react";
 import { useT } from "@/lib/i18n";
-import { profilePhotos, showcasePhotos, type PhotoGroupId } from "@/content/photos";
+import { type PhotoGroupId } from "@/content/photos";
+import {
+  fileToScaledDataUrl,
+  loadGroup,
+  replacePhoto,
+  resetGroup,
+  subscribe,
+} from "@/lib/photoStore";
 
 interface Group {
   id: PhotoGroupId;
   images: string[];
 }
 
+const GROUP_IDS: PhotoGroupId[] = ["profile", "showcase"];
+
 /**
- * Admin "Photos" section. Lets the admin preview replacement images for the
- * site's photo groups. DEMO: replacements are in-session object URLs only.
- * BACKEND: upload the chosen file and persist it via the media API/CMS.
+ * Admin "Photos" section. Replacements are saved to the shared photo store and
+ * show up on the public site immediately (About carousel + Showcase strip).
+ * BACKEND: replacePhoto currently persists a downscaled data URL in
+ * localStorage; swap it for a real upload + media URL.
  */
 export default function PhotosSection() {
   const t = useT();
-  const [groups, setGroups] = useState<Group[]>(() => [
-    { id: "profile", images: [...profilePhotos] },
-    { id: "showcase", images: [...showcasePhotos] },
-  ]);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [error, setError] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
-  const target = useRef<{ g: number; i: number } | null>(null);
+  const target = useRef<{ id: PhotoGroupId; index: number } | null>(null);
+
+  // Mirror the shared store so the admin sees the same images as the site.
+  useEffect(() => {
+    const refresh = () =>
+      setGroups(GROUP_IDS.map((id) => ({ id, images: loadGroup(id) })));
+    refresh();
+    return subscribe(refresh);
+  }, []);
 
   const groupLabel = (id: PhotoGroupId) =>
     id === "profile" ? t.admin.photos.profile : t.admin.photos.showcase;
 
-  const pick = (g: number, i: number) => {
-    target.current = { g, i };
+  const pick = (id: PhotoGroupId, index: number) => {
+    target.current = { id, index };
     fileRef.current?.click();
   };
 
-  const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     const tgt = target.current;
-    if (file && tgt) {
-      const url = URL.createObjectURL(file); // BACKEND: upload instead.
-      setGroups((prev) =>
-        prev.map((grp, gi) =>
-          gi === tgt.g
-            ? { ...grp, images: grp.images.map((im, ii) => (ii === tgt.i ? url : im)) }
-            : grp,
-        ),
-      );
-    }
     e.target.value = ""; // allow re-picking the same file
     target.current = null;
+    if (!file || !tgt) return;
+    setError(false);
+    try {
+      // BACKEND: upload `file` and store the returned URL instead of a data URL.
+      const dataUrl = await fileToScaledDataUrl(file);
+      if (!replacePhoto(tgt.id, tgt.index, dataUrl)) setError(true);
+    } catch {
+      setError(true);
+    }
   };
 
   return (
@@ -57,19 +72,37 @@ export default function PhotosSection() {
         </h2>
         <p className="mt-1 text-[14px] text-sand-deep">{t.admin.photos.intro}</p>
 
-        {/* demo-mode notice */}
+        {/* mode notice */}
         <div
           className="mt-4 rounded-[10px] px-4 py-3 text-[13px] text-gold-300"
           style={{ background: "rgba(231,178,76,.08)", border: "1px solid rgba(231,178,76,.22)" }}
         >
-          ⚠ {t.admin.photos.note}
+          ⓘ {t.admin.photos.note}
         </div>
 
-        {groups.map((grp, gi) => (
+        {error ? (
+          <div
+            className="mt-3 rounded-[10px] px-4 py-3 text-[13px]"
+            style={{ background: "rgba(209,58,90,.12)", border: "1px solid rgba(209,58,90,.4)", color: "#f0a5b5" }}
+          >
+            {t.admin.photos.saveError}
+          </div>
+        ) : null}
+
+        {groups.map((grp) => (
           <section key={grp.id} className="mt-8">
-            <h3 className="mb-3 text-[13px] uppercase tracking-[0.16em] text-gold-500">
-              {groupLabel(grp.id)}
-            </h3>
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <h3 className="text-[13px] uppercase tracking-[0.16em] text-gold-500">
+                {groupLabel(grp.id)}
+              </h3>
+              <button
+                onClick={() => resetGroup(grp.id)}
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-[7px] text-[12px] text-sand"
+                style={{ border: "1px solid rgba(231,178,76,.2)", background: "transparent" }}
+              >
+                <RotateCcw size={13} /> {t.admin.photos.reset}
+              </button>
+            </div>
             <div
               className="grid gap-4"
               style={{ gridTemplateColumns: "repeat(auto-fill,minmax(160px,1fr))" }}
@@ -89,7 +122,7 @@ export default function PhotosSection() {
                     />
                   </div>
                   <button
-                    onClick={() => pick(gi, ii)}
+                    onClick={() => pick(grp.id, ii)}
                     className="flex w-full cursor-pointer items-center justify-center gap-2 border-none py-[10px] text-[12.5px] font-medium text-gold-200"
                     style={{ background: "rgba(231,178,76,.07)" }}
                   >

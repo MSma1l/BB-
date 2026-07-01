@@ -52,8 +52,9 @@ npm run build      # static export → frontend/out/
    event photos (TODO in `ARCHITECTURE.md §8`).
 2. **Real contact details** — phone/email are still placeholders
    (search `+37360000000`, `hello@balloonsbreeze.md`).
-3. **Backend handoff** — the only swap points are the async accessors in
-   `frontend/content/*` (tagged `// BACKEND:`); see `ARCHITECTURE.md §3`.
+3. **Backend handoff** — swap points are tagged `// BACKEND:` in code and fully
+   catalogued in **[`BACKEND_TODO.md`](./BACKEND_TODO.md)** (auth, chat store,
+   photo uploads, content accessors, real media/contacts). See `ARCHITECTURE.md §3`.
 
 ---
 
@@ -103,17 +104,23 @@ is kept at the repo root for visual reference.
   be byte-identical copies of the brand logo/background/intro, not client event
   photos, so it was removed. Real event photos still need to be supplied, dropped
   into `frontend/public/uploads/`, and wired into `content/gallery.ts`.
-- Chat/admin had no real persistence — mock React state only (localStorage in the prototype).
-- Admin lives at its own route **`/admin`** behind a **temporary client-side login**
-  (`frontend/lib/auth.ts`, default `admin` / `bbreeze-admin`). This is deterrence,
-  not real security — credentials ship in the bundle. The footer no longer links
-  to it. **Backend swap:** replace `login()` in `lib/auth.ts` with a real auth API
-  (and/or protect `/admin` at the host with Vercel/Netlify/Cloudflare Access).
+- Chat/admin persist to **`localStorage`** (real cross-tab sync, no server):
+  conversations in `lib/chatStore.ts`, editable photos in `lib/photoStore.ts`.
+  This is demo-grade persistence (per-browser only) — the backend swap is in
+  `BACKEND_TODO.md`.
+- Admin lives at its own route **`/admin-bb`** behind a **temporary client-side
+  login** (`frontend/lib/auth.ts`, default `admin` / `bbreeze-admin`). This is
+  deterrence, not real security — credentials ship in the bundle. The footer no
+  longer links to it. **Backend swap:** replace `login()` with a real auth API
+  (and/or protect `/admin-bb` at the host with Vercel/Netlify/Cloudflare Access).
 - The admin is a **dashboard** (`components/admin/AdminShell.tsx`) with a section
-  menu: **Messages** (per-customer inbox; each thread shows name + surname + phone)
-  and **Photos** (replace the About/Showcase images). Photo replacement is a
-  **session-only preview mock** (object URLs) — BACKEND uploads it for real. Site
-  photo lists are centralized in `content/photos.ts`.
+  menu: **Messages** (per-customer inbox; each thread shows name + surname + phone;
+  new customer activity fires a toast + unread badge) and **Photos** (replace the
+  About/Showcase images — changes persist in `localStorage` and reflect on the
+  public site live via `useSitePhotos`; a "Reset" restores defaults). BACKEND
+  uploads photos for real (per-browser storage today). Default photo lists are in
+  `content/photos.ts`. Chat conversations are **only** ones real visitors start —
+  no seeded demos.
 
 ---
 

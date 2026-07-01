@@ -3,11 +3,12 @@
 import { useT } from "@/lib/i18n";
 import Reveal from "@/components/ui/Reveal";
 import Carousel from "@/components/ui/Carousel";
-import { profilePhotos } from "@/content/photos";
+import { useSitePhotos } from "@/lib/photoStore";
 
 export default function About() {
   const t = useT();
   const a = t.about;
+  const profilePhotos = useSitePhotos("profile");
 
   return (
     <section

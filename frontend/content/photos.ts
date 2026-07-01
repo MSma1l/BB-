@@ -1,6 +1,6 @@
-// Editable site photos — the single source for the About carousel, the
-// Showcase strip, and the admin Photos section. Today these are static files
-// in /public/photos; the admin can preview replacements in-session.
+// Default site photos — the static files in /public/photos. These are the
+// starting images for the About carousel and the Showcase strip; the admin can
+// replace them (persisted via lib/photoStore.ts) and the site updates live.
 
 export type PhotoGroupId = "profile" | "showcase";
 
@@ -20,16 +20,3 @@ export const showcasePhotos: string[] = [
   "/photos/torronto2.jpg",
 ];
 
-export interface PhotoGroup {
-  id: PhotoGroupId;
-  images: string[];
-}
-
-// BACKEND: replace with the real media list from the API/CMS. The admin Photos
-// section consumes PhotoGroup[] and is otherwise untouched by the data source.
-export async function getPhotoGroups(): Promise<PhotoGroup[]> {
-  return [
-    { id: "profile", images: profilePhotos },
-    { id: "showcase", images: showcasePhotos },
-  ];
-}

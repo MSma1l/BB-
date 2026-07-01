@@ -203,9 +203,11 @@ export interface Dictionary {
       title: string;
       intro: string;
       replace: string;
+      reset: string;
       profile: string;
       showcase: string;
       note: string;
+      saveError: string;
     };
   };
   /** Intro preloader "skip" label. */
