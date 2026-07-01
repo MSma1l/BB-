@@ -3,14 +3,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, Send, Phone } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
-import { getSeedConversations } from "@/content/chat";
-import { appendMessage, loadConversations, seedIfEmpty, subscribe } from "@/lib/chatStore";
+import { appendMessage, dropDemoConversations, loadConversations, subscribe } from "@/lib/chatStore";
 import { formatTime, initials } from "@/lib/utils";
 import type { Conversation } from "@/lib/types";
 
 /** Admin "Messages" section: a per-customer inbox + conversation thread. */
 export default function MessagesSection() {
-  const { locale, t } = useLocale();
+  const { t } = useLocale();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [mobileConv, setMobileConv] = useState(false);
@@ -18,14 +17,13 @@ export default function MessagesSection() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const nextId = useRef(1);
 
-  // Seed demo threads on first ever load, then mirror the shared store — new
+  // Mirror the shared store — only real, user-initiated conversations. New
   // customer messages (even from another tab) flow in live via subscribe().
   useEffect(() => {
-    seedIfEmpty(getSeedConversations(locale));
+    dropDemoConversations();
     const refresh = () => setConversations(loadConversations());
     refresh();
     return subscribe(refresh);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const sorted = useMemo(

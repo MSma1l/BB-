@@ -41,10 +41,16 @@ function save(convs: Conversation[]): void {
   window.dispatchEvent(new Event(EVENT));
 }
 
-/** Seed demo conversations once, only if the store is still empty. */
-export function seedIfEmpty(seed: Conversation[]): void {
+/**
+ * Remove any leftover pre-seeded demo threads (ids prefixed "demo-"), keeping
+ * only real, user-initiated conversations. Lets earlier demo data still sitting
+ * in a browser's localStorage clear itself out.
+ */
+export function dropDemoConversations(): void {
   if (!canUse()) return;
-  if (window.localStorage.getItem(KEY) === null) save(seed);
+  const all = loadConversations();
+  const real = all.filter((c) => !c.id.startsWith("demo-"));
+  if (real.length !== all.length) save(real);
 }
 
 /** Add a brand-new conversation (customer just submitted the intake form). */

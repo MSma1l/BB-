@@ -95,10 +95,14 @@ export async function getReviews(): Promise<Review[]> {
 - Search marker: every swap point is tagged with a `// BACKEND:` comment.
 
 ### Chat & admin (special case)
-The chat widget and admin panel are **fully built UI with mock conversations**. In the DC
-prototype these used `localStorage`; here they read from `content/chat.ts` and hold state
-in React. The backend dev later replaces the accessor with real data/websocket — the UI is
-untouched. No real persistence is in scope for this repo.
+The chat widget and admin panel are **fully built UI over a shared `localStorage` store**
+(`lib/chatStore.ts`). Conversations are **only** the ones visitors start via the chat intake
+form — there are no seeded/hardcoded threads. Because the customer page (`/`) and admin
+(`/admin-bb`) are separate documents, they sync through `localStorage` + the browser's
+cross-tab `storage` event: a customer's new thread/message appears in the admin inbox live
+(with a toast + unread badge), and operator replies flow back to the customer's widget.
+The backend dev replaces `load`/`save` in `chatStore.ts` with a real API + websocket/SSE —
+the component contract (`Conversation[]` + `subscribe(cb)`) is untouched. Tagged `// BACKEND:`.
 
 ---
 
