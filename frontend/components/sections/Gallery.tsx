@@ -1,37 +1,21 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useT } from "@/lib/i18n";
-import { pad2, cn } from "@/lib/utils";
-import { galleryItems, categoryMeta, galleryFilters } from "@/content/gallery";
-import type { GalleryCategory } from "@/lib/types";
+import { pad2 } from "@/lib/utils";
+import { useSitePhotos } from "@/lib/photoStore";
 import SectionHeading from "@/components/ui/SectionHeading";
 import Reveal from "@/components/ui/Reveal";
 import Lightbox from "@/components/ui/Lightbox";
 
-type Filter = "all" | GalleryCategory;
-
+/** Portfolio grid of real event photos (managed from the admin Photos section). */
 export default function Gallery() {
   const t = useT();
-  const cats = t.gallery.cats;
-  const [filter, setFilter] = useState<Filter>("all");
+  const images = useSitePhotos("gallery");
   const [lightbox, setLightbox] = useState<number | null>(null);
 
-  const filtered = useMemo(
-    () =>
-      filter === "all"
-        ? galleryItems
-        : galleryItems.filter((g) => g.category === filter),
-    [filter],
-  );
-
-  const slides = filtered.map((g) => ({
-    bg: categoryMeta[g.category].bg,
-    icon: categoryMeta[g.category].icon,
-    label: cats[g.category],
-  }));
-
-  const count = slides.length;
+  const slides = images.map((src) => ({ src, label: t.gallery.title }));
+  const count = images.length;
 
   return (
     <section
@@ -41,80 +25,40 @@ export default function Gallery() {
       <div className="mx-auto w-[min(88%,1480px)]">
         <SectionHeading kicker={t.gallery.kicker} title={t.gallery.title} />
 
-        {/* filter chips */}
-        <div className="mt-[34px] flex flex-wrap justify-center gap-[10px]">
-          {galleryFilters.map((k) => {
-            const active = filter === k;
-            return (
-              <button
-                key={k}
-                onClick={() => {
-                  setFilter(k);
-                  setLightbox(null);
-                }}
-                className={cn(
-                  "cursor-pointer rounded-full px-5 py-[10px] text-[13.5px] tracking-[0.03em] transition-all duration-200",
-                  active ? "text-gold-200" : "text-sand-deep",
-                )}
-                style={
-                  active
-                    ? {
-                        border: "1px solid rgba(231,178,76,.6)",
-                        background:
-                          "linear-gradient(180deg,rgba(251,231,168,.16),rgba(189,138,46,.1))",
-                      }
-                    : {
-                        border: "1px solid rgba(231,178,76,.2)",
-                        background: "transparent",
-                      }
-                }
-              >
-                {cats[k]}
-              </button>
-            );
-          })}
-        </div>
-
         {/* grid */}
         <div
-          className="mt-[30px] grid gap-4"
+          className="mt-[40px] grid gap-4"
           style={{ gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))" }}
         >
-          {filtered.map((g, pos) => {
-            const meta = categoryMeta[g.category];
-            return (
-              <Reveal key={g.id} delay={(pos % 4) * 0.05}>
-                <button
-                  onClick={() => setLightbox(pos)}
-                  className="group relative flex aspect-[4/3] w-full cursor-pointer items-center justify-center overflow-hidden rounded-[10px] transition-transform duration-300 hover:-translate-y-1"
+          {images.map((src, pos) => (
+            <Reveal key={`${src}-${pos}`} delay={(pos % 4) * 0.05}>
+              <button
+                onClick={() => setLightbox(pos)}
+                className="group relative flex aspect-[4/3] w-full cursor-pointer items-center justify-center overflow-hidden rounded-[10px] transition-transform duration-300 hover:-translate-y-1"
+                style={{ border: "1px solid rgba(231,178,76,.16)", background: "#140a10" }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={src}
+                  alt={`${t.gallery.title} ${pos + 1}`}
+                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div
+                  className="pointer-events-none absolute inset-0"
                   style={{
-                    border: "1px solid rgba(231,178,76,.16)",
-                    background: meta.bg,
+                    background:
+                      "linear-gradient(180deg,transparent 55%,rgba(8,4,10,.55))",
                   }}
+                />
+                <div
+                  className="absolute left-4 top-[12px] font-display text-[30px]"
+                  style={{ color: "rgba(255,255,255,.55)", textShadow: "0 2px 8px rgba(0,0,0,.6)" }}
                 >
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      background:
-                        "radial-gradient(circle at 50% 40%,color-mix(in srgb,var(--bb-accent) 18%,transparent),transparent 72%)",
-                    }}
-                  />
-                  <div
-                    className="absolute left-4 top-[14px] font-display text-[30px]"
-                    style={{ color: "rgba(231,178,76,.4)" }}
-                  >
-                    {pad2(pos + 1)}
-                  </div>
-                  <div className="relative flex flex-col items-center gap-[9px]">
-                    <span className="text-[30px] opacity-55">{meta.icon}</span>
-                    <span className="font-body text-[11px] tracking-[0.14em] text-muted">
-                      {cats[g.category]}
-                    </span>
-                  </div>
-                </button>
-              </Reveal>
-            );
-          })}
+                  {pad2(pos + 1)}
+                </div>
+              </button>
+            </Reveal>
+          ))}
         </div>
       </div>
 

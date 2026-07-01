@@ -38,14 +38,15 @@ components/
   chat/                      # ChatWidget, AdminPanel (UI only, mock-backed)
   ui/                        # small shared primitives (Badge, Pill, Section, Lightbox)
 
-content/                     # ⭐ THE BACKEND HANDOFF BOUNDARY ⭐
+content/                     # ⭐ THE BACKEND HANDOFF BOUNDARY ⭐ (+ lib/*Store.ts)
   i18n/
     ru.ts  ro.ts  en.ts      # translation tables (ported from the DC `T` object)
     index.ts                 # locale → table map + types
-  gallery.ts                 # gallery items (currently category placeholders)
+  photos.ts                  # default photo lists (profile / showcase / gallery)
   reviews.ts                 # client reviews
   services.ts                # services / wedding groups
-  chat.ts                    # mock conversations for chat + admin UI
+# localStorage-backed stores (admin-editable, see BACKEND_TODO.md):
+#   lib/chatStore.ts (conversations)  lib/photoStore.ts (photos)  lib/contentStore.ts (text)
 
 lib/
   types.ts                   # shared TS interfaces (Review, GalleryItem, Conversation…)
@@ -183,10 +184,11 @@ Append one line per non-obvious decision. Newest at top.
 
 ## 8. Open questions / TODO before/at handoff
 
-- [ ] Obtain real event photos from the client, drop them into `frontend/public/uploads/`,
-      and wire them into `content/gallery.ts` (replacing the emoji/CSS placeholders). Note:
-      the original `uploads/` folder was deleted — it held duplicates of the brand assets,
-      not real gallery media.
-- [ ] Confirm real contact details (phone, email, Instagram) — currently placeholders.
+- [ ] Obtain the final curated event photos from the client and set them as the
+      `gallery` defaults in `content/photos.ts` (the grid now shows real photos and is
+      editable from the admin; it currently defaults to the wedding/Toronto set).
+- [ ] Confirm real contact details (phone, email) — currently placeholders; editable
+      from the admin (Texts → Footer) but the shipped defaults are still fake.
 - [ ] Agree final data shapes in `lib/types.ts` with the backend dev.
-- [ ] Decide what the chat/admin becomes (real-time backend vs. contact form) — UI is ready either way.
+- [ ] Implement the backend swaps catalogued in `BACKEND_TODO.md` (auth, chat, photos,
+      text content, accessors) — the whole admin is a `localStorage` CMS until then.

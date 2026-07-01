@@ -12,6 +12,12 @@ import type { Accent, Dictionary, Locale } from "@/lib/types";
 import { DEFAULT_LOCALE, LOCALES } from "@/lib/types";
 import { getDictionary } from "@/content/i18n";
 import { ACCENTS, DEFAULT_ACCENT } from "@/lib/theme";
+import {
+  loadAllOverrides,
+  mergeDictionary,
+  subscribe as subscribeTexts,
+  type AllOverrides,
+} from "@/lib/contentStore";
 
 interface LocaleContextValue {
   locale: Locale;
@@ -41,6 +47,16 @@ function isLocale(v: unknown): v is Locale {
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE);
   const [accent, setAccentState] = useState<Accent>(DEFAULT_ACCENT);
+  // Admin text edits, overlaid on the built-in copy. Empty on first render so
+  // server HTML and first client paint agree; loaded + live-updated after mount.
+  const [overrides, setOverrides] = useState<AllOverrides>({});
+
+  // Load admin text overrides and re-apply them when they change (any tab).
+  useEffect(() => {
+    const refresh = () => setOverrides(loadAllOverrides());
+    refresh();
+    return subscribeTexts(refresh);
+  }, []);
 
   // Restore a stored language preference after hydration.
   useEffect(() => {
@@ -79,11 +95,11 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
     () => ({
       locale,
       setLocale,
-      t: getDictionary(locale),
+      t: mergeDictionary(getDictionary(locale), overrides[locale] ?? {}),
       accent,
       setAccent: setAccentState,
     }),
-    [locale, setLocale, accent],
+    [locale, setLocale, accent, overrides],
   );
 
   return (

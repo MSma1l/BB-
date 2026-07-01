@@ -3,15 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { MessageSquare, Images, Bell } from "lucide-react";
+import { MessageSquare, Images, Type, Bell } from "lucide-react";
 import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { loadConversations, subscribe } from "@/lib/chatStore";
 import LangSwitch from "@/components/ui/LangSwitch";
 import MessagesSection from "@/components/admin/MessagesSection";
 import PhotosSection from "@/components/admin/PhotosSection";
+import TextsSection from "@/components/admin/TextsSection";
 
-type Section = "messages" | "photos";
+type Section = "messages" | "photos" | "texts";
 
 /**
  * The "new customer activity" signal. Counts every conversation *and* every
@@ -84,6 +85,7 @@ export default function AdminShell({ onLogout }: { onLogout: () => void }) {
   }[] = [
     { id: "messages", label: t.admin.nav.messages, Icon: MessageSquare, badge: unread },
     { id: "photos", label: t.admin.nav.photos, Icon: Images },
+    { id: "texts", label: t.admin.nav.texts, Icon: Type },
   ];
 
   return (
@@ -171,7 +173,13 @@ export default function AdminShell({ onLogout }: { onLogout: () => void }) {
 
       {/* active section */}
       <main className="min-h-0 flex-1">
-        {section === "messages" ? <MessagesSection /> : <PhotosSection />}
+        {section === "messages" ? (
+          <MessagesSection />
+        ) : section === "photos" ? (
+          <PhotosSection />
+        ) : (
+          <TextsSection />
+        )}
       </main>
 
       {/* new-message toast */}

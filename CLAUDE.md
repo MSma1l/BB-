@@ -98,12 +98,10 @@ is kept at the repo root for visual reference.
 ## ⚠️ Known placeholders (not real yet)
 
 - Contact details are fake: phone `+37360000000`, email `hello@balloonsbreeze.md`, Instagram link.
-- The **gallery grid** tiles are still CSS-pattern placeholders with emoji icons
-  (About + Showcase now use real photos from `frontend/public/photos/`).
-  **There is no real gallery media yet** — the old `uploads/` folder turned out to
-  be byte-identical copies of the brand logo/background/intro, not client event
-  photos, so it was removed. Real event photos still need to be supplied, dropped
-  into `frontend/public/uploads/`, and wired into `content/gallery.ts`.
+- The **gallery grid** now shows **real photos** (an editable `gallery` photo group,
+  defaulting to the wedding/Toronto set in `frontend/public/photos/`); it's managed
+  from the admin like About/Showcase. Supply the final curated portfolio set when
+  ready (defaults in `content/photos.ts`, or add via the admin).
 - Chat/admin persist to **`localStorage`** (real cross-tab sync, no server):
   conversations in `lib/chatStore.ts`, editable photos in `lib/photoStore.ts`.
   This is demo-grade persistence (per-browser only) — the backend swap is in
@@ -113,14 +111,20 @@ is kept at the repo root for visual reference.
   deterrence, not real security — credentials ship in the bundle. The footer no
   longer links to it. **Backend swap:** replace `login()` with a real auth API
   (and/or protect `/admin-bb` at the host with Vercel/Netlify/Cloudflare Access).
-- The admin is a **dashboard** (`components/admin/AdminShell.tsx`) with a section
-  menu: **Messages** (per-customer inbox; each thread shows name + surname + phone;
-  new customer activity fires a toast + unread badge) and **Photos** (replace the
-  About/Showcase images — changes persist in `localStorage` and reflect on the
-  public site live via `useSitePhotos`; a "Reset" restores defaults). BACKEND
-  uploads photos for real (per-browser storage today). Default photo lists are in
-  `content/photos.ts`. Chat conversations are **only** ones real visitors start —
-  no seeded demos.
+- The admin is a **dashboard** (`components/admin/AdminShell.tsx`) with three
+  sections — effectively a **full CMS** over `localStorage` (BACKEND makes it
+  server-side + multi-device):
+  - **Messages** — per-customer inbox (name + surname + phone); new customer
+    activity fires a toast + unread badge. Conversations are **only** ones real
+    visitors start (no seeded demos).
+  - **Photos** — **add / replace / delete** images in three groups: `profile`
+    (About carousel), `showcase` (Showcase strip), `gallery` (portfolio grid).
+    Changes persist and reflect on the site live via `useSitePhotos`; "Reset"
+    restores defaults. Store: `lib/photoStore.ts`; defaults in `content/photos.ts`.
+  - **Texts** — edit **every string** on the site, per language (RU/RO/EN tabs),
+    including contact phone/email. Overrides are overlaid on the shipped dictionary
+    by the i18n provider and shown live. Store: `lib/contentStore.ts`
+    (`mergeDictionary` + dot-path overrides keyed by locale).
 
 ---
 

@@ -5,12 +5,12 @@ import { Phone, MessageCircle, Mail, MapPin } from "lucide-react";
 import { useT } from "@/lib/i18n";
 import { useUI } from "@/lib/ui";
 
-const PHONE = "+37360000000";
-
 export default function Footer() {
   const t = useT();
   const f = t.footer;
   const { openChat } = useUI();
+  // Derive the dial link from the (editable) displayed phone number.
+  const telHref = `tel:${f.phone.replace(/[^+\d]/g, "")}`;
 
   return (
     <footer
@@ -38,7 +38,7 @@ export default function Footer() {
 
         <div className="mt-[38px] flex flex-wrap justify-center gap-4">
           <a
-            href={`tel:${PHONE}`}
+            href={telHref}
             className="inline-flex items-center gap-[11px] rounded-full px-[34px] py-[17px] text-[15px] font-semibold no-underline bb-gold-btn"
           >
             <Phone size={16} /> {f.phone}

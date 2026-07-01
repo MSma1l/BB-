@@ -38,11 +38,15 @@ export default function Carousel({
     return () => window.clearInterval(id);
   }, [images.length, intervalMs]);
 
+  // No images (admin deleted them all) — render nothing over the styled frame.
+  if (images.length === 0) return null;
+  const safeIndex = index % images.length;
+
   return (
     <div className="absolute inset-0 overflow-hidden">
       <AnimatePresence initial={false}>
         <motion.div
-          key={index}
+          key={safeIndex}
           className="absolute inset-0"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -50,10 +54,10 @@ export default function Carousel({
           transition={{ duration: 0.8, ease: "easeInOut" }}
         >
           <Image
-            src={images[index]}
+            src={images[safeIndex]}
             alt={alt}
             fill
-            priority={priority && index === 0}
+            priority={priority && safeIndex === 0}
             sizes={sizes ?? "100vw"}
             className="object-cover"
           />

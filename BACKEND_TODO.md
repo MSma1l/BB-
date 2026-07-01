@@ -15,14 +15,15 @@
 ## How the frontend is wired (context you need)
 
 - **No server today.** The app is exported to static HTML in `frontend/out/`.
-- **Two "stores" fake persistence with `localStorage`** so features work in a demo
+- **Three "stores" fake persistence with `localStorage`** so features work in a demo
   and sync across browser tabs (via the `storage` event):
   - `frontend/lib/chatStore.ts` — chat conversations.
   - `frontend/lib/photoStore.ts` — admin-editable site photos.
+  - `frontend/lib/contentStore.ts` — admin-editable site text (all copy, per locale).
   Each exposes a tiny contract: **a load/save pair + a `subscribe(cb)` function**.
   Replace the *insides* of these; leave the exported function names/shapes alone.
-- **Read-only content** (services, reviews, gallery) is served by `async` accessor
-  functions in `frontend/content/*` that currently `return` local mock arrays.
+- **Read-only content** (services, reviews) is served by `async` accessor functions
+  in `frontend/content/*` that currently `return` local mock arrays.
 - **i18n**: all three languages (RU/RO/EN) share one `Dictionary` shape. If content
   comes from the backend it must be returned **per locale** (the accessors already
   take a `locale` argument).
@@ -90,11 +91,13 @@ operator when they're not on the page.
 `frontend/components/sections/About.tsx` and `Showcase.tsx` via the
 `useSitePhotos(groupId)` hook.
 
-**Now:** the admin can replace any image in two groups — `"profile"` (About
-carousel) and `"showcase"` (Showcase strip). The picked file is **downscaled and
-stored as a base64 data URL in `localStorage`** (key `bb_site_photos`), then shown
-on the public site live (same-browser). Defaults are the static files in
-`frontend/public/photos/` (listed in `frontend/content/photos.ts`).
+**Now:** the admin can **replace, add, and delete** images in three groups —
+`"profile"` (About carousel), `"showcase"` (Showcase strip), and `"gallery"` (the
+portfolio grid, which now shows real photos instead of the old CSS placeholders).
+The picked file is **downscaled and stored as a base64 data URL in `localStorage`**
+(key `bb_site_photos`), then shown on the public site live (same-browser). Defaults
+are the static files in `frontend/public/photos/` (listed in
+`frontend/content/photos.ts`).
 
 **Why it needs you:** `localStorage` data URLs are **per-browser** — an edit on the
 admin's laptop is NOT visible to real site visitors, and there's a ~5 MB storage
@@ -103,48 +106,79 @@ cap. Real photo management needs server upload + storage (S3/Cloudinary/CMS).
 **Do — replace these exported functions in `photoStore.ts`:**
 - `fileToScaledDataUrl(file)` → **upload the raw `File`** to your media storage and
   return the stored URL (drop the client-side base64 encoding).
-- `saveGroup(id, images)` / `replacePhoto(id, index, src)` → persist the group's
-  image URLs server-side.
+- `saveGroup(id, images)` / `replacePhoto(id, index, src)` / `addPhoto(id, src)` /
+  `removePhoto(id, index)` → persist the group's image URLs server-side.
 - `loadGroup(id): string[]` → fetch the current URLs for the group (fall back to
   the defaults in `content/photos.ts`).
 - `resetGroup(id)` → restore the group to defaults.
 - `subscribe(cb)` → (optional) push updates so open pages refresh live; otherwise a
   page reload picking up `loadGroup` is acceptable.
 
-**Groups:** `PhotoGroupId = "profile" | "showcase"` (`content/photos.ts`). Adding a
-new editable group = add an id + defaults there and a card renders automatically.
+**Groups:** `PhotoGroupId = "profile" | "showcase" | "gallery"` (`content/photos.ts`).
+Adding a new editable group = add an id + defaults there and a card renders
+automatically.
 
 The exact upload call site is marked in `PhotosSection.tsx`:
 `// BACKEND: upload `file` and store the returned URL instead of a data URL.`
 
 ---
 
-## 4. Read-only content accessors  🟢 straightforward
+## 4. Editable site text (all copy, all languages)  🟡 needs content store
+
+**Files:** `frontend/lib/contentStore.ts` (the seam) + the merge in
+`frontend/lib/i18n.tsx`; admin UI in `frontend/components/admin/TextsSection.tsx`.
+
+**Now:** the admin "Texts" section lets the operator edit **every string on the
+site**, per language (RU/RO/EN tabs). Edits are stored as **path→value overrides in
+`localStorage`** (key `bb_text_overrides`, shape `{ [locale]: { "hero.titleA": "…" } }`)
+and overlaid on the built-in copy by `mergeDictionary()` inside the i18n provider,
+so the public site updates live. Only changed fields are stored; everything else
+falls back to the shipped copy in `content/i18n/{ru,ro,en}.ts`. **This includes the
+contact phone/email** (`footer.phone`, `footer.email`) — the footer dial link is
+derived from the edited phone.
+
+**Do — replace these exported functions in `contentStore.ts`:**
+- `loadAllOverrides()` / `loadLocaleOverrides(locale)` → fetch overrides from your
+  content API/CMS.
+- `setTextOverride(locale, path, value)` / `clearTextOverride(locale, path)` /
+  `resetLocaleTexts(locale)` → persist edits server-side.
+- `subscribe(cb)` → (optional) push updates for live refresh.
+- Keep `mergeDictionary()` + the dot-path helpers as-is (pure functions).
+
+**Shape:** overrides are keyed by a dot-path into `Dictionary` (`lib/types.ts`) —
+e.g. `"hero.titleA"`, `"about.points.0"`, `"services.wedding.groups.1.title"`,
+`"footer.phone"`. A full CMS could instead serve the whole `Dictionary` per locale;
+if so, drop the override layer and have the provider fetch the dictionary directly.
+
+---
+
+## 5. Read-only content accessors  🟢 straightforward
 
 These already have the right shape — just replace the mock `return` with a fetch.
-Each takes a `locale` where content is translatable.
+Each takes a `locale` where content is translatable. (Note: these overlap with #4 —
+if the text store serves the whole dictionary, these can fold into it.)
 
 | Feature  | File                        | Function                                   |
 |----------|-----------------------------|--------------------------------------------|
 | Services | `frontend/content/services.ts` | `getServices(locale): Promise<ServicesData>` |
 | Reviews  | `frontend/content/reviews.ts`  | `getReviews(locale): Promise<Review[]>`      |
-| Gallery  | `frontend/content/gallery.ts`  | `getGallery(): Promise<GalleryItem[]>`       |
 
-Shapes are in `lib/types.ts` (`ServiceGroup`, `ServiceCategory`, `Review`,
-`GalleryItem`, `GalleryCategory`).
+Shapes are in `lib/types.ts` (`ServiceGroup`, `ServiceCategory`, `Review`).
+(The gallery is now an editable photo group — see #3 — not a separate accessor.)
 
 ---
 
-## 5. Real content still missing (not code — assets/copy)
+## 6. Real content still missing (not code — assets/copy)
 
-- **Gallery media:** the gallery grid still uses **CSS-pattern placeholders with
-  emoji**, not real photos. Supply real event photos, drop them in
-  `frontend/public/uploads/`, and wire them into `content/gallery.ts`
-  (`GalleryItem[]`). This is the main remaining visual gap.
-- **Contact details are placeholders.** Replace everywhere:
-  - phone **`+37360000000`**
-  - email **`hello@balloonsbreeze.md`**
-  They live in the i18n footer copy — search `frontend/content/i18n/{ru,ro,en}.ts`.
+- **Gallery media:** the gallery now shows **real photos** and is editable from the
+  admin (#3), currently defaulting to the wedding/Toronto set in
+  `frontend/public/photos/`. Supply the final curated portfolio images (drop them in
+  `frontend/public/photos/` and set them as the `gallery` defaults in
+  `content/photos.ts`, or just add them via the admin once uploads are real).
+- **Contact details are placeholders.** The admin can now edit them (Texts → Footer),
+  but the shipped defaults are still fake — replace in `content/i18n/{ru,ro,en}.ts`:
+  - phone **`+37360000000`**  (`footer.phone`)
+  - email **`hello@balloonsbreeze.md`**  (`footer.email`)
 - **The three profile photos + showcase photos** in `frontend/public/photos/` are
   real; confirm they're the final approved set.
 
@@ -155,7 +189,7 @@ Shapes are in `lib/types.ts` (`ServiceGroup`, `ServiceCategory`, `Review`,
 1. **Auth** (#1) — lock down `/admin-bb` before anything else is real.
 2. **Chat** (#2) — the core interactive feature; needs a datastore + realtime.
 3. **Photos** (#3) — upload + storage so edits are global, not per-browser.
-4. **Content accessors** (#4) + **real media/contacts** (#5) — as content is ready.
+4. **Text content** (#4) + **accessors** (#5) + **real media/contacts** (#6) — as content is ready.
 
 ## Ground rules (so the frontend keeps working)
 

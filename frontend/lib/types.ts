@@ -193,7 +193,7 @@ export interface Dictionary {
     loginError: string;
     logout: string;
     /** Dashboard section menu. */
-    nav: { messages: string; photos: string };
+    nav: { messages: string; photos: string; texts: string };
     /** Phone label in the conversation header. */
     phoneLabel: string;
     /** Toast prefix when a new customer message arrives, e.g. "New message from". */
@@ -203,11 +203,21 @@ export interface Dictionary {
       title: string;
       intro: string;
       replace: string;
+      add: string;
+      delete: string;
       reset: string;
       profile: string;
       showcase: string;
+      gallery: string;
       note: string;
       saveError: string;
+    };
+    /** Text-editing section. */
+    texts: {
+      title: string;
+      intro: string;
+      note: string;
+      resetLang: string;
     };
   };
   /** Intro preloader "skip" label. */

@@ -18,7 +18,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { profilePhotos, showcasePhotos, type PhotoGroupId } from "@/content/photos";
+import {
+  galleryPhotos,
+  profilePhotos,
+  showcasePhotos,
+  type PhotoGroupId,
+} from "@/content/photos";
 
 const KEY = "bb_site_photos";
 const EVENT = "bb-photos-changed";
@@ -29,6 +34,7 @@ const canUse = () => typeof window !== "undefined";
 const DEFAULTS: Record<PhotoGroupId, string[]> = {
   profile: profilePhotos,
   showcase: showcasePhotos,
+  gallery: galleryPhotos,
 };
 
 type Overrides = Partial<Record<PhotoGroupId, string[]>>;
@@ -70,6 +76,19 @@ export function replacePhoto(id: PhotoGroupId, index: number, src: string): bool
   return saveGroup(
     id,
     loadGroup(id).map((im, i) => (i === index ? src : im)),
+  );
+}
+
+/** Append a new image to a group and persist. */
+export function addPhoto(id: PhotoGroupId, src: string): boolean {
+  return saveGroup(id, [...loadGroup(id), src]);
+}
+
+/** Remove the image at `index` from a group and persist. */
+export function removePhoto(id: PhotoGroupId, index: number): boolean {
+  return saveGroup(
+    id,
+    loadGroup(id).filter((_, i) => i !== index),
   );
 }
 
