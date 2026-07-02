@@ -50,6 +50,23 @@ export default function IntroPreloader() {
         transition: "opacity .6s ease",
       }}
     >
+      {/* Blurred, scaled copy of the same video fills the frame — the video's
+          own imagery extends everywhere instead of black letterbox bars. */}
+      <video
+        src="/assets/intro.mp4"
+        autoPlay
+        muted
+        playsInline
+        preload="auto"
+        aria-hidden
+        className="absolute inset-0 h-full w-full"
+        style={{
+          objectFit: "cover",
+          filter: "blur(40px) brightness(0.6)",
+          transform: "scale(1.12)",
+        }}
+      />
+      {/* The actual intro video, fully visible (never cropped). */}
       <video
         src="/assets/intro.mp4"
         autoPlay
@@ -57,8 +74,8 @@ export default function IntroPreloader() {
         playsInline
         preload="auto"
         onEnded={end}
-        className="h-full w-full"
-        style={{ objectFit: "contain", background: "#06030a" }}
+        className="absolute inset-0 h-full w-full"
+        style={{ objectFit: "contain" }}
       />
       <button
         onClick={end}
