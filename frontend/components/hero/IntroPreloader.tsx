@@ -53,8 +53,8 @@ export default function IntroPreloader() {
         transition: "opacity .6s ease",
       }}
     >
-      {/* Video fills the whole screen so its own background continues to every
-          edge (no bars). Keeps aspect ratio; only the extreme edges may crop. */}
+      {/* Whole composition always visible (contain, never cropped); the dark-red
+          gradient behind fills the margins so they continue the video's tone. */}
       <video
         src="/assets/intro.mp4"
         autoPlay
@@ -63,7 +63,7 @@ export default function IntroPreloader() {
         preload="auto"
         onEnded={end}
         className="h-full w-full"
-        style={{ objectFit: "cover" }}
+        style={{ objectFit: "contain" }}
       />
       <button
         onClick={end}
