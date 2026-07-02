@@ -43,10 +43,6 @@ services:
       args:
         NEXT_PUBLIC_API_URL: /api
     restart: unless-stopped
-    environment:
-      # Edge (nginx) Basic Auth for /admin-bb — defense-in-depth over the JWT login.
-      EDGE_AUTH_USER: ${EDGE_AUTH_USER:-admin}
-      EDGE_AUTH_PASSWORD: ${EDGE_AUTH_PASSWORD:-bbreeze-edge}
     depends_on:
       - backend
     ports:

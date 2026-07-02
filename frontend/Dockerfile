@@ -20,11 +20,7 @@ RUN npm run build
 
 # ---- Stage 2: nginx serves the export AND reverse-proxies to the backend ----
 FROM nginx:alpine AS runtime
-# apache2-utils provides `htpasswd` to build the Basic Auth file at start.
-RUN apk add --no-cache apache2-utils
 COPY --from=build /app/out /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY web-entrypoint.sh /usr/local/bin/web-entrypoint.sh
-RUN chmod +x /usr/local/bin/web-entrypoint.sh
 EXPOSE 80
-ENTRYPOINT ["/usr/local/bin/web-entrypoint.sh"]
+CMD ["nginx", "-g", "daemon off;"]

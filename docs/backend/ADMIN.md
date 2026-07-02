@@ -1,24 +1,22 @@
 # Admin Access Guide
 
 The admin CMS (Messages inbox, Photos, Texts, **Reviews moderation**) lives at its
-own route and is protected by **two layers**: (1) nginx HTTP Basic Auth at the edge,
-then (2) JWT app login against a bcrypt-hashed admin user seeded from env.
+own route and is protected by a **single login**: the in-app JWT login form, which
+authenticates against a bcrypt-hashed admin user seeded from env.
 
 ## How to reach it
 
-You are prompted **twice** in Docker: first the browser's Basic Auth dialog
-(edge), then the in-app login form (JWT).
+Open the URL and you get **one** login form. Enter the admin username + password
+(from `.env`) and you're in.
 
 | | Value |
 |---|---|
 | **URL (Docker)** | `http://localhost:8080/admin-bb` |
-| **URL (local dev)** | `http://localhost:3000/admin-bb` (no edge auth in `npm run dev`) |
-| **Edge Basic Auth (Docker only)** | user `EDGE_AUTH_USER` / pass `EDGE_AUTH_PASSWORD` — defaults `admin` / `bbreeze-edge` |
-| **App username** | `admin` |
-| **App password** | `bbreeze-admin` |
+| **URL (local dev)** | `http://localhost:3000/admin-bb` |
+| **Username** | `ADMIN_USERNAME` (default `admin`) |
+| **Password** | `ADMIN_PASSWORD` (default `bbreeze-admin`) |
 
-The route path is `/admin-bb`. The public footer does **not** link to it. Only
-`/admin-bb` is behind Basic Auth; the public site and `/api` are not.
+The route path is `/admin-bb`. The public footer does **not** link to it.
 
 > ⚠️ **CHANGE THE DEFAULT CREDENTIALS BEFORE DEPLOYING.**
 > `admin` / `bbreeze-admin` are well-known defaults. Set `ADMIN_USERNAME` and
@@ -60,9 +58,5 @@ Photo groups are only seeded when missing, so this never clobbers admin edits.
 
 - This is real server-side auth (unlike the old static build, where credentials
   shipped in the browser bundle). Still, treat it as app-level protection.
-- `/admin-bb` is **edge-protected by nginx HTTP Basic Auth** (`web-entrypoint.sh`
-  builds `/etc/nginx/.htpasswd` from `EDGE_AUTH_USER`/`EDGE_AUTH_PASSWORD` at
-  container start) as defense in depth on top of the JWT login. On a managed host
-  you may swap this for Vercel/Netlify/Cloudflare Access.
-- Change `EDGE_AUTH_PASSWORD` (and `ADMIN_PASSWORD`, `JWT_SECRET`) before
-  deploying; keep `.env` out of version control.
+- Change `ADMIN_PASSWORD` (and `JWT_SECRET`) before deploying; keep `.env` out of
+  version control.

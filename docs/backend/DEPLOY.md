@@ -19,7 +19,7 @@ Three containers on an internal Docker bridge (`bbnet`):
 | `web`     | nginx:alpine        | 80 in-container           | **Yes**, but only `127.0.0.1:${WEB_PORT}`|
 
 The `web` nginx serves the static Next.js export **and** reverse-proxies `/api/`
-and `/uploads/` to `backend:4000`, and enforces HTTP Basic Auth on `/admin-bb`.
+and `/uploads/` to `backend:4000`.
 
 In production (`docker-compose.prod.yml`) the web port is bound to **loopback
 only**, so the container is unreachable from the internet directly. The host's
@@ -86,7 +86,7 @@ Now generate strong secrets and paste them into `.env`:
 
 ```bash
 openssl rand -hex 32     # → JWT_SECRET
-openssl rand -base64 18  # → ADMIN_PASSWORD, EDGE_AUTH_PASSWORD
+openssl rand -base64 18  # → ADMIN_PASSWORD
 openssl rand -hex 24     # → POSTGRES_PASSWORD
 ```
 
@@ -96,7 +96,7 @@ Edit `.env` and set, at minimum:
   match it exactly** (same string, both places).
 - `JWT_SECRET` — long random (mandatory in production; the backend fails fast
   without it).
-- `ADMIN_PASSWORD` and `EDGE_AUTH_PASSWORD` — strong; do not ship the defaults.
+- `ADMIN_PASSWORD` — strong; do not ship the default.
 - `CORS_ORIGIN=https://your-domain.com` — your real domain.
 - `WEB_PORT=8080` — leave unless 8080 is taken (see the preflight step).
 
@@ -206,10 +206,8 @@ curl -I https://REAL-DOMAIN.com/                 # 200, HTML
 curl https://REAL-DOMAIN.com/api/health          # {"ok":true}
 ```
 
-Admin: open `https://REAL-DOMAIN.com/admin-bb`. You'll be prompted **twice** —
-first the browser's HTTP Basic Auth dialog (edge: `EDGE_AUTH_USER` /
-`EDGE_AUTH_PASSWORD`), then the in-app login form (JWT: `ADMIN_USERNAME` /
-`ADMIN_PASSWORD`). See [`ADMIN.md`](./ADMIN.md).
+Admin: open `https://REAL-DOMAIN.com/admin-bb`. You get a single in-app login
+form (JWT: `ADMIN_USERNAME` / `ADMIN_PASSWORD`). See [`ADMIN.md`](./ADMIN.md).
 
 ---
 
@@ -218,7 +216,6 @@ first the browser's HTTP Basic Auth dialog (edge: `EDGE_AUTH_USER` /
 - [ ] `JWT_SECRET` — long random (e.g. `openssl rand -hex 32`), not the placeholder.
 - [ ] `POSTGRES_PASSWORD` — strong, and the copy inside `DATABASE_URL` matches.
 - [ ] `ADMIN_PASSWORD` — strong (not `bbreeze-admin`).
-- [ ] `EDGE_AUTH_PASSWORD` — strong (not `bbreeze-edge`).
 - [ ] `CORS_ORIGIN=https://REAL-DOMAIN.com` (your real domain, not `*`).
 - [ ] `NODE_ENV=production`.
 - [ ] `.env` is `chmod 600` and NOT committed.
@@ -300,9 +297,7 @@ It's set in the example conf — confirm you copied that block.
 
 **Admin locked out / forgot password.** Set a new `ADMIN_PASSWORD` in `.env` and
 restart — the seed re-syncs (upserts) the admin user's bcrypt hash on every
-start: `dcp up -d` (or `dcp restart backend`). For the edge Basic Auth prompt,
-change `EDGE_AUTH_PASSWORD` and `dcp up -d --force-recreate web`. See
-[`ADMIN.md`](./ADMIN.md).
+start: `dcp up -d` (or `dcp restart backend`). See [`ADMIN.md`](./ADMIN.md).
 
 **"Missing required env var: JWT_SECRET".** In production the backend fails fast
 without it — set `JWT_SECRET` in `.env` and restart.

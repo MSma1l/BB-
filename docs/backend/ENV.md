@@ -24,8 +24,6 @@ services.
 | `MAX_UPLOAD_MB` | Max photo upload size in MB (multer limit). | `8` | no |
 | `UPLOAD_DIR` | Directory where uploaded images are written and served from at `/uploads`. Mount as a persistent volume. | `uploads` | no |
 | `WEB_PORT` | Host port the `web` (nginx) service is published on. | `8080` | no |
-| `EDGE_AUTH_USER` | Username for the nginx HTTP Basic Auth gating `/admin-bb` (edge, defense-in-depth over JWT). | `admin` | no |
-| `EDGE_AUTH_PASSWORD` | Password for the edge Basic Auth on `/admin-bb`. **Secret** — change before deploy. | `bbreeze-edge` | yes |
 | `NODE_ENV` | Node environment; `production` makes `JWT_SECRET` mandatory. | `development` / `production` | no |
 | `PORT` | Port the backend Express server listens on. | `4000` | no |
 | `CORS_ORIGIN` | Allowed CORS origin(s), comma-separated; `*` allows all. Only matters when the browser hits the backend directly (dev); irrelevant behind the single-origin nginx proxy. | `*` (dev) / your site origin (prod) | no |

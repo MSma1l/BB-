@@ -56,10 +56,6 @@ services:
         NEXT_PUBLIC_API_URL: /api
     container_name: balloonsbreeze-web
     restart: unless-stopped
-    environment:
-      # Edge Basic Auth on /admin-bb (kept as defense-in-depth behind the proxy).
-      EDGE_AUTH_USER: ${EDGE_AUTH_USER:-admin}
-      EDGE_AUTH_PASSWORD: ${EDGE_AUTH_PASSWORD:-bbreeze-edge}
     depends_on:
       backend:
         condition: service_healthy
