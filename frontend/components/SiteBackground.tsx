@@ -37,12 +37,13 @@ export default function SiteBackground() {
           background: "url('/assets/nebula-bg.jpg') center/cover no-repeat",
         }}
       />
-      {/* darkening vignette for text contrast over the whole page */}
+      {/* darkening vignette for text contrast — tinted dark-red at the edges so
+          the backdrop continues the intro video's red tone (not black). */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse 90% 80% at 50% 35%,rgba(8,4,10,.35),rgba(8,4,10,.82) 70%,#08040a)",
+            "radial-gradient(ellipse 95% 85% at 50% 33%,rgba(20,7,13,.32),rgba(15,6,11,.80) 70%,#140610)",
         }}
       />
       {/* floating balloons (above the nebula + vignette, below content) */}
