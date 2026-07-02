@@ -99,7 +99,9 @@ export default function Services() {
                   border: "1px solid rgba(231,178,76,.16)",
                 }}
               >
-                <h3 className="m-0 mb-[18px] font-display text-[26px] font-semibold text-gold-300">
+                <h3
+                  className="m-0 mb-[18px] font-display text-[19px] font-semibold leading-[1.15] text-gold-300 [overflow-wrap:anywhere] md:text-[26px]"
+                >
                   {o.title}
                 </h3>
                 <div className="flex flex-col gap-[11px]">
