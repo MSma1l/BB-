@@ -39,5 +39,9 @@ export const env = {
   adminPassword: process.env.ADMIN_PASSWORD ?? "bbreeze-admin",
   corsOrigin: process.env.CORS_ORIGIN ?? "*",
   uploadDir: process.env.UPLOAD_DIR ?? "uploads",
-  maxUploadMb: Number(process.env.MAX_UPLOAD_MB ?? 8),
+  // Max raw upload accepted (input cap, before compression).
+  maxUploadMb: Number(process.env.MAX_UPLOAD_MB ?? 12),
+  // Hard ceiling for the STORED image after compression (WebP). Kept well below
+  // this in practice; guarantees no stored image exceeds it.
+  imageMaxMb: Number(process.env.IMAGE_MAX_MB ?? 5),
 } as const;
