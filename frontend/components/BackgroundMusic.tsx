@@ -84,7 +84,11 @@ export default function BackgroundMusic() {
 
   return (
     <>
-      <audio ref={audioRef} src={SRC} loop preload="auto" />
+      {/* preload="none": don't fetch the ~7MB track until playback actually
+          starts (on the intro-done autoplay attempt or the first user gesture),
+          so mobile visitors who never enable sound never pay for it (QA-1 MOB
+          perf 7.5). The explicit .play() calls trigger the load when needed. */}
+      <audio ref={audioRef} src={SRC} loop preload="none" />
       <button
         type="button"
         onClick={toggle}
