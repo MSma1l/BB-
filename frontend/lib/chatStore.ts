@@ -11,6 +11,7 @@
 // keyed by the localStorage `myConversationId`.
 
 import { apiFetch, apiJson, getToken, sse } from "@/lib/api";
+import { showToast } from "@/lib/toast";
 import type { ChatMessage, Conversation } from "@/lib/types";
 
 /** Remembers which conversation belongs to this visitor, so they resume it. */
@@ -90,7 +91,9 @@ export function addConversation(conv: Conversation): void {
       }
     })
     .catch(() => {
-      /* keep optimistic copy */
+      // Keep the optimistic thread (kicking back to the form would be jarring),
+      // but tell the visitor the request didn't reach the server (QA-3 Rec #6).
+      showToast("error", "network");
     });
 }
 
@@ -106,7 +109,15 @@ export function appendMessage(convId: string, msg: ChatMessage): void {
     method: "POST",
     json: msg,
   }).catch(() => {
-    /* keep optimistic copy */
+    // Send failed — drop the optimistic message so it doesn't look delivered,
+    // and notify the sender (QA-3 Rec #6).
+    cache = cache.map((c) =>
+      c.id === convId
+        ? { ...c, messages: c.messages.filter((m) => m.id !== msg.id) }
+        : c,
+    );
+    emit();
+    showToast("error", "network");
   });
 }
 

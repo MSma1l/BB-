@@ -236,4 +236,7 @@ export const en: Dictionary = {
     },
   },
   introSkip: "Skip",
+  errors: {
+    network: "Couldn't reach the server. Please check your connection and try again.",
+  },
 };

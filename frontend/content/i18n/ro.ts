@@ -246,4 +246,7 @@ export const ro: Dictionary = {
     },
   },
   introSkip: "Sări peste",
+  errors: {
+    network: "Nu s-a putut contacta serverul. Verifică conexiunea și încearcă din nou.",
+  },
 };

@@ -12,6 +12,7 @@
 
 import { useEffect, useState } from "react";
 import { apiFetch, apiJson, sse } from "@/lib/api";
+import { showToast } from "@/lib/toast";
 import type { Review } from "@/lib/types";
 
 const EVENT = "bb-reviews-changed";
@@ -88,7 +89,11 @@ export function addReview(input: Omit<Review, "id">, ts: number): Review | null 
         }
       })
       .catch(() => {
-        /* keep optimistic copy */
+        // Persist failed — revert the optimistic review and tell the user, so a
+        // dropped submission doesn't look like it succeeded (QA-3 Rec #6).
+        cache = cache.filter((r) => r.id !== review.id);
+        emit();
+        showToast("error", "network");
       });
   }
   return review;

@@ -251,4 +251,9 @@ export interface Dictionary {
   };
   /** Intro preloader "skip" label. */
   introSkip: string;
+  /** Transient error notifications (shown by the global Toaster). */
+  errors: {
+    /** A write (chat message / review) couldn't reach the server. */
+    network: string;
+  };
 }
