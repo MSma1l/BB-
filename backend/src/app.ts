@@ -14,6 +14,8 @@ export function createApp() {
 
   // Behind nginx: trust the first proxy so req.ip / rate-limiting see the real client IP.
   app.set("trust proxy", 1);
+  // Don't advertise the framework (minor hardening; QA-4 rec #8).
+  app.disable("x-powered-by");
 
   app.use(cors({ origin: env.corsOrigin === "*" ? true : env.corsOrigin.split(",") }));
   app.use(express.json({ limit: "2mb" }));
@@ -35,10 +37,17 @@ export function createApp() {
   // 404 for unknown API routes
   app.use("/api", (_req, res) => res.status(404).json({ error: "Not found" }));
 
-  // Central error handler
+  // Central error handler. Async handlers wrapped with asyncHandler funnel their
+  // rejections here (Express 4 wouldn't otherwise), so a duplicate-id write is a
+  // clean 409 instead of a process crash (QA-4 QA4-01 / QA4-03).
   app.use(
     (err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-      const anyErr = err as { status?: number; message?: string };
+      const anyErr = err as { status?: number; code?: string; message?: string };
+      // Prisma unique-constraint violation → the resource already exists.
+      if (anyErr?.code === "P2002") {
+        res.status(409).json({ error: "Resource already exists" });
+        return;
+      }
       const status = anyErr?.status ?? 500;
       if (status >= 500) console.error(err);
       res.status(status).json({ error: anyErr?.message ?? "Server error" });

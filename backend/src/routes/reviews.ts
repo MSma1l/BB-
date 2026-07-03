@@ -5,6 +5,7 @@ import { requireAdmin } from "../middleware/auth";
 import { publicWriteLimiter } from "../middleware/rateLimit";
 import { broadcast, sseHandler } from "../sse";
 import { stripTags } from "../sanitize";
+import { asyncHandler } from "../asyncHandler";
 import { MAX_NAME_LEN, MAX_REVIEW_TEXT_LEN, MAX_ROLE_LEN } from "../constants";
 
 export const reviewsRouter = Router();
@@ -54,7 +55,7 @@ reviewsRouter.get("/", async (_req, res) => {
 });
 
 // POST /api/reviews (public) → create a review
-reviewsRouter.post("/", publicWriteLimiter, async (req, res) => {
+reviewsRouter.post("/", publicWriteLimiter, asyncHandler(async (req, res) => {
   const parsed = createSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid review payload" });
@@ -75,7 +76,7 @@ reviewsRouter.post("/", publicWriteLimiter, async (req, res) => {
   });
   broadcast("reviews");
   res.status(201).json(serializeReview(review));
-});
+}));
 
 // PUT /api/reviews/:id/approve (admin) → publish a pending review.
 // updateMany makes a missing id a no-op (no throw).

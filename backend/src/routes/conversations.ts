@@ -6,6 +6,7 @@ import { optionalAdmin, requireAdmin } from "../middleware/auth";
 import { chatMessageLimiter, publicWriteLimiter } from "../middleware/rateLimit";
 import { broadcast, sseHandler } from "../sse";
 import { stripTags } from "../sanitize";
+import { asyncHandler } from "../asyncHandler";
 import { MAX_MESSAGE_LEN, MAX_NAME_LEN, MAX_PHONE_LEN } from "../constants";
 
 export const conversationsRouter = Router();
@@ -92,7 +93,7 @@ conversationsRouter.get("/:id", async (req, res) => {
 });
 
 // POST /api/conversations (public) → create conversation + nested messages
-conversationsRouter.post("/", publicWriteLimiter, async (req, res) => {
+conversationsRouter.post("/", publicWriteLimiter, asyncHandler(async (req, res) => {
   const parsed = conversationSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid conversation payload" });
@@ -119,14 +120,14 @@ conversationsRouter.post("/", publicWriteLimiter, async (req, res) => {
   });
   broadcast("conversations");
   res.status(201).json(serializeConversation(conv));
-});
+}));
 
 // POST /api/conversations/:id/messages → append a message.
 // Public for visitors, but rate-limited (QA-3 QA3-4) and — critically — only an
 // authenticated admin may post as the operator (QA-3 QA3-1), so nobody can inject
 // a fake "operator" reply into a visitor's thread. `optionalAdmin` runs first so
 // the limiter can exempt admins and the operator check can see `req.admin`.
-conversationsRouter.post("/:id/messages", optionalAdmin, chatMessageLimiter, async (req, res) => {
+conversationsRouter.post("/:id/messages", optionalAdmin, chatMessageLimiter, asyncHandler(async (req, res) => {
   const parsed = messageSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid message payload" });
@@ -154,4 +155,4 @@ conversationsRouter.post("/:id/messages", optionalAdmin, chatMessageLimiter, asy
   ]);
   broadcast("conversations");
   res.status(201).json(serializeMessage(message));
-});
+}));

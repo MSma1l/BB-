@@ -8,7 +8,7 @@ vi.mock("../../src/sse", () => ({
 
 vi.mock("../../src/db", () => ({
   prisma: {
-    conversation: { findUnique: vi.fn(), update: vi.fn() },
+    conversation: { findUnique: vi.fn(), update: vi.fn(), create: vi.fn() },
     chatMessage: { create: vi.fn() },
     // The route calls prisma.$transaction([create(...), update(...)]); the ops
     // are promises, so resolve them (like the real client) and return the
@@ -93,5 +93,24 @@ describe("POST /api/conversations/:id/messages", () => {
       .send({ id: "m-6", from: "operator", text: "Real admin reply", ts: 123 });
     expect(res.status).toBe(201);
     expect(res.body).toMatchObject({ from: "operator", text: "Real admin reply" });
+  });
+});
+
+describe("POST /api/conversations (duplicate id)", () => {
+  it("409 (not a process crash) when the id already exists (QA4-01)", async () => {
+    // Prisma raises P2002 on a unique-constraint violation. Before the fix this
+    // rejected async → crashed the process (502); now it maps to a clean 409.
+    db.conversation.create.mockRejectedValue({ code: "P2002" });
+    const res = await request(app)
+      .post("/api/conversations")
+      .send({
+        id: CONV,
+        first: "Dup",
+        last: "Test",
+        phone: "+37300000000",
+        ts: 1,
+        messages: [],
+      });
+    expect(res.status).toBe(409);
   });
 });
