@@ -61,6 +61,16 @@ server {
     include             /etc/letsencrypt/options-ssl-nginx.conf;      # sane TLS defaults
     ssl_dhparam         /etc/letsencrypt/ssl-dhparams.pem;
 
+    # Don't leak the nginx version (QA-1 BUG: server version disclosure).
+    server_tokens off;
+
+    # HSTS (QA-1 BUG #4) — only meaningful on this TLS-terminating edge. The
+    # other security headers (X-Frame-Options, X-Content-Type-Options,
+    # Referrer-Policy, CSP) are set by the web container (frontend/nginx.conf)
+    # and pass through this proxy unchanged. Add HSTS only once you've confirmed
+    # HTTPS works for the apex + all subdomains you serve, since it's sticky.
+    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+
     # Photo uploads: MAX_UPLOAD_MB=8 in .env, so allow a bit more for multipart
     # overhead. Must exceed 8m or uploads fail at the host proxy with 413.
     client_max_body_size 12m;

@@ -4,6 +4,7 @@ import { prisma } from "../db";
 import { requireAdmin } from "../middleware/auth";
 import { publicWriteLimiter } from "../middleware/rateLimit";
 import { broadcast, sseHandler } from "../sse";
+import { stripTags } from "../sanitize";
 
 export const reviewsRouter = Router();
 
@@ -19,11 +20,14 @@ function serializeReview(r: DbReview) {
   return { id: r.id, name: r.name, role: r.role, rating: r.rating, text: r.text };
 }
 
+// Strip HTML from visitor-supplied free text before storage (QA-1 BUG #1).
+// `name` must still be non-empty *after* stripping, so a tags-only name is
+// rejected rather than stored blank.
 const createSchema = z.object({
-  name: z.string().min(1),
-  role: z.string(),
+  name: z.string().min(1).transform(stripTags).pipe(z.string().min(1)),
+  role: z.string().transform(stripTags),
   rating: z.number().min(0.5).max(5),
-  text: z.string(),
+  text: z.string().transform(stripTags),
 });
 
 // GET /api/reviews/stream → SSE (registered before /:id)

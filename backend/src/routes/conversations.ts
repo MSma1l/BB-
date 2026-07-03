@@ -5,21 +5,24 @@ import { toMs } from "../db";
 import { requireAdmin } from "../middleware/auth";
 import { publicWriteLimiter } from "../middleware/rateLimit";
 import { broadcast, sseHandler } from "../sse";
+import { stripTags } from "../sanitize";
 
 export const conversationsRouter = Router();
 
+// Strip HTML from visitor-supplied free text before storage (QA-1 BUG #1) — the
+// same trust-boundary sanitization applied to reviews.
 const messageSchema = z.object({
   id: z.string().min(1),
   from: z.enum(["visitor", "operator"]),
-  text: z.string(),
+  text: z.string().transform(stripTags),
   ts: z.number(),
 });
 
 const conversationSchema = z.object({
   id: z.string().min(1),
-  first: z.string(),
-  last: z.string(),
-  phone: z.string(),
+  first: z.string().transform(stripTags),
+  last: z.string().transform(stripTags),
+  phone: z.string().transform(stripTags),
   ts: z.number(),
   messages: z.array(messageSchema).default([]),
 });
