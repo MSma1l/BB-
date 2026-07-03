@@ -1,175 +1,146 @@
 # CLAUDE.md — Live handoff note
 
 > Read this first. It tells you **where the project is right now** and **what to do next**.
-> For the *why* behind decisions, see [`README.md`](./README.md) and
-> [`ARCHITECTURE.md`](./ARCHITECTURE.md).
+> For the *why* behind decisions, see [`README.md`](./README.md),
+> [`ARCHITECTURE.md`](./ARCHITECTURE.md), and the backend docs in
+> [`docs/backend/`](./docs/backend/).
 
 ---
 
 ## What this project is
 
-Frontend-only rebuild of **Balloons Breeze** — a trilingual (RU/RO/EN) marketing landing
-site for an event-décor company. **No backend, no DB, no API calls** — the whole UI runs on
-typed mock data so a colleague can wire in real data later. The frontend dev's job is pure
-UI/UX.
+**Balloons Breeze** — a trilingual (RU/RO/EN) marketing site for an event-décor
+company. It is now a **full-stack app**:
 
-Stack (as built): **React 19 + Next.js 16 (App Router, static export) + TypeScript +
-Tailwind CSS v4**, with React Three Fiber (3D balloon hero), Framer Motion, lucide-react,
-next/font, and a **client-side React context for i18n** (RU/RO/EN). Full rationale in
-`README.md`; the deviations from the original plan are in the decision log below and in
-`ARCHITECTURE.md §7`.
+- **`frontend/`** — React 19 + Next.js 16 (App Router, **static export**) +
+  TypeScript + Tailwind CSS v4, with React Three Fiber (3D balloon hero), Framer
+  Motion, lucide-react, next/font, and **client-side React-context i18n** (RU/RO/EN).
+- **`backend/`** — Node 20 + Express + TypeScript + Prisma + PostgreSQL. JWT admin
+  auth (bcrypt, seeded from env), chat + admin inbox with **SSE** realtime, photo
+  uploads (multer → sharp/WebP → disk volume), per-locale editable texts, and
+  moderated visitor reviews. Frozen contract in `backend/API_CONTRACT.md`.
+- **Deploy** — `docker compose` runs `db` (postgres) + `backend` + `web` (nginx
+  serving the static frontend and reverse-proxying `/api` + `/uploads` to the
+  backend, single origin). Host TLS proxy example in `deploy/`.
 
----
-
-## ⏱️ Current status (as of this handoff)
-
-- ✅ Project analyzed; stack chosen; rationale documented.
-- ✅ `README.md` and `ARCHITECTURE.md` written.
-- ✅ **App scaffolded and built** in `frontend/` (see below). All sections, the
-  R3F balloon hero, real-photo gallery + lightbox, the chat widget, the admin
-  **CMS** (messages / photos / texts), visitor-submitted reviews, and trilingual
-  i18n are implemented. `npm run build` produces a clean static export to
-  `frontend/out/`, verified visually (desktop + mobile, RU/RO).
-- ✅ **Mobile compaction pass** (branch `mobile-responsive`): small screens are
-  ~27% shorter (tighter section spacing + 2-up card grids for gallery / process /
-  services) while the **desktop layout is provably unchanged** (see the
-  desktop-frozen convention in `ARCHITECTURE.md §5` — do not collapse the
-  `clamp()` mins or `md:` overrides back to single values).
-
-**The site is feature-complete as a frontend. Next work is real content (final
-curated gallery photos + real contact details) and the backend handoff (replace
-the four `localStorage` stores + `content/` accessors with a real API — all
-catalogued in [`BACKEND_TODO.md`](./BACKEND_TODO.md)).**
-
-- ✅ **Real backend built** in `backend/` (Node 20 + Express + TypeScript +
-  Prisma + PostgreSQL). JWT admin auth (bcrypt-hashed password seeded from env),
-  chat + admin inbox with **SSE** realtime, photo uploads (multer → disk volume),
-  per-locale editable texts, and visitor reviews. Frozen contract in
-  `backend/API_CONTRACT.md`; full docs in [`docs/backend/`](./docs/backend/).
-- ✅ **Frontend wired to the API** — `frontend/lib/{auth,chatStore,photoStore,contentStore,reviewStore}.ts`
-  now call the backend via `frontend/lib/api.ts` (cache+revalidate + SSE),
-  keeping every exported signature unchanged (the golden rule). Read-only
-  accessors (`content/services.ts`, `content/reviews.ts`) intentionally stay
-  frontend-side (they read the shipped dictionary; editing flows via Texts).
-- ✅ **Dockerized** — `docker compose up --build` from repo root runs `db`
-  (postgres) + `backend` + `web` (nginx serving the static frontend and
-  reverse-proxying `/api` + `/uploads` to the backend, single origin). Config in
-  root `.env` / `.env.example`. **Not yet run live against Postgres in-repo**
-  (code compiles clean; run it on a Docker host). Admin: `/admin-bb`, default
-  `admin` / `bbreeze-admin` (change `ADMIN_*` in `.env` before deploy).
+> **History:** this began as a frontend-only rebuild against `localStorage` mocks.
+> The backend has since been built and the frontend wired to it — the four
+> `lib/*Store.ts` modules now call the API via `frontend/lib/api.ts`, keeping
+> their exported signatures unchanged (the "golden rule"). `README.md` /
+> `ARCHITECTURE.md` still carry some frontend-only framing; treat this file and
+> `docs/backend/` as the current truth. `BACKEND_TODO.md` is **largely done**
+> (kept as historical context — see its header).
 
 ---
 
-## ▶️ How to run (in `frontend/`)
+## ⏱️ Current status
 
+- ✅ Frontend feature-complete (all sections, R3F hero, gallery + lightbox, chat
+  widget, admin CMS, visitor reviews, trilingual i18n). `npm run build` → clean
+  static export.
+- ✅ Backend built + frontend wired to it (REST + SSE, JWT auth, uploads,
+  moderation). Backend + frontend unit tests green (`vitest`).
+- ✅ Dockerized (root `docker-compose.yml`; prod/server variants + nginx configs).
+- ✅ **QA hardening pass (5 reports + polish) applied** — see below.
+
+### QA hardening applied (branches all merged to `main`)
+| Area | What changed |
+|------|--------------|
+| Desktop security (`qa1-backend-security`) | Server-side HTML sanitization (`backend/src/sanitize.ts`) on reviews + conversations; nginx security headers (`frontend/nginx.conf`, `deploy/nginx-host.conf.example`). |
+| Mobile (`qa1-mobile-fixes`) | iOS `env(safe-area-inset-*)` on the fixed FABs; `loading="lazy"` on the gallery; `touch-action: manipulation`. |
+| Chat (`qa3-chat-security`) | Operator messages require admin JWT (`optionalAdmin`); empty/oversize message validation; per-minute chat rate limiter; unguessable conversation/message ids (also fixed a latent `ChatMessage.id` PK collision); send/submit debounce. |
+| Backend resilience (`qa4-backend-resilience`) | `asyncHandler` + Prisma `P2002`→409 so a duplicate id no longer crashes the process; `unhandledRejection` safety net; `x-powered-by` off. |
+| Multilingual (`qa5-charset`) | `charset utf-8` on text responses. |
+| Polish (`polish-error-toasts`, `optimize-mobile-assets`) | Global `Toaster` — failed chat/review writes revert the optimistic item and notify the user (no more silent fail); background music `preload="none"` (defers the 7 MB track). |
+
+---
+
+## ▶️ How to run
+
+**Frontend only (UI work):**
 ```bash
 cd frontend
-npm install        # if node_modules is missing
+npm install
 npm run dev        # http://localhost:3000
 npm run build      # static export → frontend/out/
+npx vitest run     # unit tests
 ```
+
+**Full stack (Docker, from repo root):**
+```bash
+cp .env.example .env      # set ADMIN_*, JWT_SECRET, DB creds before real use
+docker compose up --build # db + backend + web (nginx) on one origin
+```
+
+**Backend only:**
+```bash
+cd backend
+npm install
+npm run dev        # tsx watch (needs DATABASE_URL + JWT_SECRET)
+npx vitest run     # unit tests
+```
+Admin panel: `/admin-bb`, default `admin` / `bbreeze-admin` — **change `ADMIN_*`
+in `.env` before deploying.**
+
+---
 
 ## ▶️ Remaining / next steps
 
-1. **Real media** — the About (profile carousel), Showcase strip, and **gallery
-   grid** all now use real photos in `frontend/public/photos/` and are editable
-   from the admin. Supply the final curated portfolio set for the gallery when
-   ready (defaults in `content/photos.ts`, or add via the admin). TODO in
-   `ARCHITECTURE.md §8`.
-2. **Real contact details** — phone/email are still placeholders
-   (search `+37360000000`, `hello@balloonsbreeze.md`; editable in Texts → Footer,
-   but the shipped defaults are fake).
-3. **Backend handoff** — swap points are tagged `// BACKEND:` in code and fully
-   catalogued in **[`BACKEND_TODO.md`](./BACKEND_TODO.md)** (auth, chat store,
-   photo uploads, text overrides, visitor reviews, content accessors, real
-   media/contacts). See `ARCHITECTURE.md §3`.
+1. **Real media** — About carousel, Showcase, and gallery use real photos in
+   `frontend/public/photos/` and are admin-editable. Supply the final curated
+   portfolio set when ready (defaults in `content/photos.ts` **and** the mirror in
+   `backend/src/constants.ts` `PHOTO_DEFAULTS`, which the DB seed writes in).
+2. **Verify contact details** — the shipped copy now uses real-looking contacts
+   (`+37376616384`, `balloonsbreeze@gmail.com`); confirm they're final. Editable
+   in admin → Texts → Footer.
+3. **Run live against Postgres** — code + tests are green; do a real
+   `docker compose up` on a host and smoke-test chat/uploads/moderation.
+4. **Deferred asset optimization (QA-1 mobile MOB-2)** — static `/photos/*.jpg`
+   are **not** converted to WebP (the DB seed writes those exact paths, so renaming
+   would break live serving for no gain) and `srcset` isn't feasible under
+   `output: export` + `images.unoptimized`; the 4.6 MB intro video is core brand
+   media. Revisit only with a real image pipeline / CDN.
+5. **Social/messenger links** — intentionally **omitted** by owner decision.
 
 ---
 
-## ⚙️ Decisions made during the build (differ slightly from original plan)
+## ⚙️ Key conventions (don't regress these)
 
-1. **Location:** clean **`frontend/`** subfolder (docs stay at repo root).
-2. **Package manager:** **npm**.
-3. **Mock accessors:** **async** (`getReviews()` etc.), as recommended.
-4. **Next.js 16, not 15** — `create-next-app@latest` now ships Next 16 + React 19
-   + Tailwind v4. Built on it (latest stable); no blockers.
-5. **i18n is client-side context, not next-intl URL routing** — static export
-   can't run next-intl middleware, and the prototype switched language instantly
-   client-side. Copy still lives as typed data in `content/i18n/`; switching is
-   instant and persists to `localStorage`. The default locale (RU) is what gets
-   pre-rendered into the static HTML for SEO. See `ARCHITECTURE.md §7` decision log.
-6. **Styling is a Tailwind-v4 + inline-style hybrid** — Tailwind for layout +
-   design tokens (`@theme` in `globals.css`); the prototype's intricate gradients
-   / `clamp()` values are kept as inline styles for fidelity.
+- **Golden rule:** the `frontend/lib/*Store.ts` exported signatures are the
+  component contract — change bodies, not shapes. Data shapes live in
+  `frontend/lib/types.ts`; the backend mirrors them.
+- **Desktop layout is frozen** — mobile tweaks must not change ≥768px. Use the two
+  desktop-safe levers in `ARCHITECTURE.md §5` (lower `clamp()` *mins* only; `md:`
+  overrides restore desktop). Don't collapse them back to single values.
+- **i18n:** all user-facing copy lives in `content/i18n/{ru,ro,en}.ts` (all three
+  implement the `Dictionary` type — the compiler keeps them in sync). No hard-coded
+  strings; RU is the pre-rendered default + fallback.
+- **Security (from QA):** never trust client input — the backend sanitizes + length-
+  caps + rate-limits public writes, gates operator messages behind JWT, and wraps
+  async handlers so DB errors become clean HTTP (not crashes). Keep new public
+  endpoints to the same pattern.
 
 ---
 
 ## 📁 Original prototype (removed — see git history)
 
-The site was first built on a custom "DC" React runtime. Those files
-(`Ballons Breeze.dc.html` — the source with the `T` copy table + Three.js balloon
-/ chat / admin logic; `Ballons Breeze.html` — 7 MB compiled build; `support.js` —
-the DC runtime; `Canvas.dc.html`) have been **deleted now that the rebuild is
-complete**. Everything in them was ported into `frontend/`. If you ever need to
-cross-check the original copy or behaviour, restore from git:
+The site was first built on a custom "DC" React runtime (`Ballons Breeze.dc.html`
++ `support.js` etc.), since deleted. Everything was ported into `frontend/`. To
+cross-check the original copy/behaviour, restore from git:
 
 ```bash
-git show 96bb632:"Ballons Breeze.dc.html" > prototype.html   # the source
+git show 96bb632:"Ballons Breeze.dc.html" > prototype.html
 ```
 
-Brand media (`logo-bb.jpg`, `nebula-bg.jpg`, `intro.mp4`) now lives only in
-`frontend/public/assets/`. `screenshots/` (rendered previews of the original)
-is kept at the repo root for visual reference.
-
----
-
-## ⚠️ Known placeholders (not real yet)
-
-- Contact details are fake: phone `+37360000000`, email `hello@balloonsbreeze.md`.
-- The **gallery grid** now shows **real photos** (an editable `gallery` photo group,
-  defaulting to the wedding/Toronto set in `frontend/public/photos/`); it's managed
-  from the admin like About/Showcase. Supply the final curated portfolio set when
-  ready (defaults in `content/photos.ts`, or add via the admin).
-- Everything dynamic persists to **`localStorage`** (real cross-tab sync, no
-  server) via **four stores**, each with a `load`/`save` + `subscribe(cb)`
-  contract the backend swaps behind:
-  - `lib/chatStore.ts` — chat conversations + admin inbox.
-  - `lib/photoStore.ts` — admin-editable site photos.
-  - `lib/contentStore.ts` — admin-editable site text (all copy, per locale).
-  - `lib/reviewStore.ts` — visitor-submitted reviews.
-  This is demo-grade persistence (per-browser only) — the backend swap is in
-  `BACKEND_TODO.md`.
-- Admin lives at its own route **`/admin-bb`** behind a **temporary client-side
-  login** (`frontend/lib/auth.ts`, default `admin` / `bbreeze-admin`). This is
-  deterrence, not real security — credentials ship in the bundle. The footer no
-  longer links to it. **Backend swap:** replace `login()` with a real auth API
-  (and/or protect `/admin-bb` at the host with Vercel/Netlify/Cloudflare Access).
-- The admin is a **dashboard** (`components/admin/AdminShell.tsx`) with three
-  sections — effectively a **full CMS** over `localStorage` (BACKEND makes it
-  server-side + multi-device):
-  - **Messages** — per-customer inbox. Visitors open a thread via the chat
-    intake form (name + surname + phone + a first message, all validated); new
-    customer activity fires a toast + unread badge. Conversations are **only**
-    ones real visitors start (no seeded demos). Timestamps show in the viewer's
-    local time (`formatTime`).
-  - **Photos** — **add / replace / delete** images in three groups: `profile`
-    (About carousel), `showcase` (Showcase strip), `gallery` (portfolio grid).
-    Changes persist and reflect on the site live via `useSitePhotos`; "Reset"
-    restores defaults. Store: `lib/photoStore.ts`; defaults in `content/photos.ts`.
-  - **Texts** — edit **every string** on the site, per language (RU/RO/EN tabs),
-    including contact phone/email. Overrides are overlaid on the shipped dictionary
-    by the i18n provider and shown live. Store: `lib/contentStore.ts`
-    (`mergeDictionary` + dot-path overrides keyed by locale).
-- **Visitor reviews** (public site, not admin) — anyone can leave a review from the
-  Reviews section: name, event/role, a **half-star rating (0.5 steps, 1–5)**, and
-  text. Shown alongside the built-in testimonials; stored as written (not
-  translated), so identical across locales. Store: `lib/reviewStore.ts`
-  (`removeReview` is ready to back an admin moderation UI once there's a backend).
+Brand media (`logo-bb.jpg`, `nebula-bg.jpg`, `intro.mp4`, `Moby-Flower.mp3`) lives
+in `frontend/public/assets/`. `screenshots/` (previews of the original) is kept at
+the repo root for reference.
 
 ---
 
 ## 🚚 Moving to a new folder?
 
-Bring `frontend/` and the three root `.md` files (`CLAUDE.md`, `README.md`,
-`ARCHITECTURE.md`); `screenshots/` is optional reference. With those, a fresh
-session can fully reconstruct the project context from this file.
+Bring `frontend/`, `backend/`, `docs/`, `deploy/`, the root `docker-compose*.yml` +
+`.env.example`, and the root `.md` files (`CLAUDE.md`, `README.md`,
+`ARCHITECTURE.md`, `BACKEND_TODO.md`). With those, a fresh session can reconstruct
+the full project context from this file.

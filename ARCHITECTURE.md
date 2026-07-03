@@ -1,10 +1,20 @@
 # Architecture & Conventions
 
-This document is the technical contract for the Balloons Breeze frontend. It exists so that
-**future-you and the backend colleague never have to reverse-engineer a decision.**
+This document is the technical contract for the Balloons Breeze **frontend**. It exists so that
+**future-you never has to reverse-engineer a decision.**
 
-- Audience: frontend devs building the UI, and the backend dev who will wire in real data.
-- Scope: frontend only. No server logic lives here.
+- Audience: frontend devs building the UI.
+- Scope: the frontend. The **conventions below (folder layout, data contract, i18n,
+  styling/desktop-frozen §5, components §6) are still current.**
+
+> **⚠️ Status update:** the "frontend-only / no server" framing throughout this doc is now
+> **historical**. The backend has been built (`backend/` — Express + Prisma + PostgreSQL +
+> JWT + SSE) and the frontend is wired to it: the `lib/*Store.ts` modules described here as
+> `localStorage` stores now call the API via `frontend/lib/api.ts`, with their **exported
+> signatures unchanged** — so this doc's component/data contract still holds. For the live
+> backend design see `backend/API_CONTRACT.md` + [`docs/backend/`](./docs/backend/); for
+> current status and the QA security-hardening pass see [`CLAUDE.md`](./CLAUDE.md). Read
+> mentions of "mock data / localStorage" below as "the store's current data source".
 
 ---
 
@@ -181,6 +191,18 @@ Beyond chat, three more stores back live-editable content, all following the sam
 
 Append one line per non-obvious decision. Newest at top.
 
+- **QA hardening pass (5 reports + polish).** After a full-stack QA sweep, applied
+  server-side sanitization + length caps + rate limiting on public writes, JWT-gated
+  operator chat messages, unguessable conversation/message ids (capability URLs; also
+  fixed a latent `ChatMessage.id` PK collision), `asyncHandler` + Prisma-`P2002`→409 so a
+  duplicate id can't crash Express, nginx security headers + `charset utf-8`, iOS safe-area
+  insets + lazy gallery images, a global error `Toaster` (no more silent write failures),
+  and `preload="none"` on the background audio. Details + branch names in `CLAUDE.md`.
+- **Backend built; stores now call a real API.** The four `lib/*Store.ts` seams (chat,
+  photos, texts, reviews) and `lib/auth.ts` were swapped from `localStorage` to the
+  Express/Prisma backend via `lib/api.ts` (REST + SSE), **keeping every exported signature**
+  — so the data contract in §3 and the components are untouched. Read-only accessors
+  (`content/services.ts`, `content/reviews.ts`) stay frontend-side by design.
 - **Mobile compacted without touching desktop.** The desktop layout was signed off as
   final, so the mobile pass only shortens small screens via two provably desktop-safe
   levers (see §5): lowering `clamp()` **minimums** (desktop sits on the `vw`/`max` term)

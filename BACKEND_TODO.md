@@ -1,14 +1,30 @@
 # Backend TODO — Balloons Breeze
 
+> ## ✅ IMPLEMENTED — this doc is now historical
+> **The backend described below has been built** (`backend/`: Node 20 + Express +
+> Prisma + PostgreSQL, JWT auth, chat/inbox with SSE, photo uploads, per-locale
+> texts, moderated reviews) and the frontend is wired to it via
+> `frontend/lib/api.ts` — the `lib/*Store.ts` swaps in §2–§5 are **done**, with
+> their exported signatures unchanged. See `backend/API_CONTRACT.md` and
+> [`docs/backend/`](./docs/backend/) for the live design, and `CLAUDE.md` for
+> current status (incl. the QA security-hardening pass).
+>
+> This file is kept as the original spec / rationale. Still-open, non-code items:
+> final curated gallery photos and confirming real contact details (§6).
+> The QA security-hardening pass (sanitization, rate limits, auth, resilience,
+> headers) is summarized in **`CLAUDE.md`**.
+
+<details>
+<summary>Original brief (frontend-only phase) — expand for the full plan</summary>
+
 > **For the backend developer (and their AI assistant).**
-> The site is a **frontend-only** static export (Next.js 16, `output: "export"`).
-> Everything works today on **mock data / browser `localStorage`**. Your job is to
+> The site was a **frontend-only** static export (Next.js 16, `output: "export"`).
+> Everything worked on **mock data / browser `localStorage`**. The job was to
 > replace those mocks with a real API — **without changing the UI**.
 >
-> **The golden rule:** every swap point is marked in code with a `// BACKEND:`
-> comment, and the data shapes are frozen in **`frontend/lib/types.ts`**. If you
-> keep the same function signatures and return the same shapes, no component
-> needs to change. Search the repo for `BACKEND:` to find every seam.
+> **The golden rule:** every swap point was marked in code with a `// BACKEND:`
+> comment, and the data shapes are frozen in **`frontend/lib/types.ts`**. Keeping
+> the same function signatures and return shapes meant no component had to change.
 
 ---
 
@@ -214,3 +230,5 @@ so they appear the same across all three locales. Swap it for a real API and add
 - The app is a static export; anything requiring a server (auth, chat, uploads)
   also needs a hosting/runtime decision (API routes, serverless, or a separate
   backend service the static site calls).
+
+</details>
