@@ -38,3 +38,12 @@ export type Locale = (typeof LOCALES)[number];
 export function isLocale(v: string): v is Locale {
   return (LOCALES as readonly string[]).includes(v);
 }
+
+// --- Public free-text length caps (anti-abuse / storage-DoS; QA-3 QA3-3). ---
+// Applied at the zod boundary on the public write endpoints. Generous enough for
+// real input, tight enough to reject 100KB spray payloads.
+export const MAX_NAME_LEN = 120;
+export const MAX_PHONE_LEN = 40;
+export const MAX_ROLE_LEN = 120;
+export const MAX_MESSAGE_LEN = 4000;
+export const MAX_REVIEW_TEXT_LEN = 4000;

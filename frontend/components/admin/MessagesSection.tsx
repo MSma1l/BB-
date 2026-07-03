@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, Send, Phone } from "lucide-react";
 import { useLocale } from "@/lib/i18n";
 import { appendMessage, dropDemoConversations, loadConversations, subscribe } from "@/lib/chatStore";
-import { formatTime, initials } from "@/lib/utils";
+import { formatTime, initials, randomId } from "@/lib/utils";
 import type { Conversation } from "@/lib/types";
 
 /** Admin "Messages" section: a per-customer inbox + conversation thread. */
@@ -15,7 +15,7 @@ export default function MessagesSection() {
   const [mobileConv, setMobileConv] = useState(false);
   const [draft, setDraft] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
-  const nextId = useRef(1);
+  const busyRef = useRef(false);
 
   // Mirror the shared store — only real, user-initiated conversations. New
   // customer messages (even from another tab) flow in live via subscribe().
@@ -38,11 +38,15 @@ export default function MessagesSection() {
 
   const reply = () => {
     const text = draft.trim();
-    if (!text || !activeId) return;
+    if (!text || !activeId || busyRef.current) return;
+    busyRef.current = true;
+    window.setTimeout(() => (busyRef.current = false), 350);
     const ts = Date.now();
     // Persist to the shared store; the subscribe() above refreshes our view and
-    // the customer's chat widget picks the reply up in their tab.
-    appendMessage(activeId, { id: `o${nextId.current++}`, from: "operator", text, ts });
+    // the customer's chat widget picks the reply up in their tab. Random id: the
+    // old per-session `o1, o2…` counter collided with ChatMessage's global
+    // primary key across sessions/conversations.
+    appendMessage(activeId, { id: randomId("m"), from: "operator", text, ts });
     setDraft("");
   };
 

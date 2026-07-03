@@ -5,7 +5,7 @@ import Image from "next/image";
 import { MessageCircle, X, Send } from "lucide-react";
 import { useT } from "@/lib/i18n";
 import { useUI } from "@/lib/ui";
-import { formatTime } from "@/lib/utils";
+import { formatTime, randomId } from "@/lib/utils";
 import {
   addConversation,
   appendMessage,
@@ -42,6 +42,9 @@ export default function ChatWidget() {
   const [convId, setConvId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
+  // Guards against a rapid double-click firing two submits/sends before React
+  // re-renders (QA-3 3.4 — no debounce → duplicate messages).
+  const busyRef = useRef(false);
 
   // Resume this visitor's own conversation after a reload (post-mount, so the
   // first client paint still matches the server-rendered intake form).
@@ -94,15 +97,16 @@ export default function ChatWidget() {
       setErrors(errs);
       return;
     }
+    if (busyRef.current) return; // ignore a double-click while this submit runs
+    busyRef.current = true;
+    window.setTimeout(() => (busyRef.current = false), 600);
 
     const now = Date.now();
-    // Unguessable id: a timestamp id (`c<ms>`) could be enumerated to read other
-    // visitors' threads (name/phone/messages) via the public GET /conversations/:id.
-    const rnd =
-      typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `${now}-${Math.random().toString(36).slice(2)}`;
-    const id = `c${rnd}`;
+    // Unguessable id so the public GET /conversations/:id capability URL can't be
+    // enumerated to read other visitors' threads (QA-3 QA3-5). Message ids are
+    // random too — ChatMessage.id is a global primary key, so a fixed "greet"
+    // would collide on the second conversation ever created.
+    const id = randomId("c");
     // Send name + surname + message together: the personalized greeting plus the
     // visitor's first message, published to the shared store for the admin inbox.
     addConversation({
@@ -110,8 +114,8 @@ export default function ChatWidget() {
       ...c,
       ts: now,
       messages: [
-        { id: "greet", from: "operator", text: buildGreeting(t, c), ts: now },
-        { id: `v${now}`, from: "visitor", text: message, ts: now },
+        { id: randomId("m"), from: "operator", text: buildGreeting(t, c), ts: now },
+        { id: randomId("m"), from: "visitor", text: message, ts: now },
       ],
     });
     setMyConversationId(id);
@@ -125,8 +129,10 @@ export default function ChatWidget() {
 
   const send = () => {
     const text = draft.trim();
-    if (!text || !convId) return;
-    appendMessage(convId, { id: `v${Date.now()}`, from: "visitor", text, ts: Date.now() });
+    if (!text || !convId || busyRef.current) return;
+    busyRef.current = true;
+    window.setTimeout(() => (busyRef.current = false), 350);
+    appendMessage(convId, { id: randomId("m"), from: "visitor", text, ts: Date.now() });
     setDraft("");
   };
 

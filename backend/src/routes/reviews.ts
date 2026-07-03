@@ -5,6 +5,7 @@ import { requireAdmin } from "../middleware/auth";
 import { publicWriteLimiter } from "../middleware/rateLimit";
 import { broadcast, sseHandler } from "../sse";
 import { stripTags } from "../sanitize";
+import { MAX_NAME_LEN, MAX_REVIEW_TEXT_LEN, MAX_ROLE_LEN } from "../constants";
 
 export const reviewsRouter = Router();
 
@@ -24,10 +25,10 @@ function serializeReview(r: DbReview) {
 // `name` must still be non-empty *after* stripping, so a tags-only name is
 // rejected rather than stored blank.
 const createSchema = z.object({
-  name: z.string().min(1).transform(stripTags).pipe(z.string().min(1)),
-  role: z.string().transform(stripTags),
+  name: z.string().min(1).max(MAX_NAME_LEN).transform(stripTags).pipe(z.string().min(1)),
+  role: z.string().max(MAX_ROLE_LEN).transform(stripTags),
   rating: z.number().min(0.5).max(5),
-  text: z.string().transform(stripTags),
+  text: z.string().max(MAX_REVIEW_TEXT_LEN).transform(stripTags),
 });
 
 // GET /api/reviews/stream → SSE (registered before /:id)

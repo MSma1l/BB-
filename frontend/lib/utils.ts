@@ -20,6 +20,20 @@ export function pad2(n: number): string {
   return String(n).padStart(2, "0");
 }
 
+/**
+ * Collision-resistant, unguessable id with a short prefix, e.g. `randomId("c")`.
+ * Used for conversation + chat-message ids: high entropy so a conversation's
+ * capability URL (GET /api/conversations/:id) can't be enumerated (QA-3 QA3-5),
+ * and unique so message primary keys never collide across sessions.
+ */
+export function randomId(prefix: string): string {
+  const rand =
+    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : Math.random().toString(36).slice(2) + Date.now().toString(36);
+  return `${prefix}-${rand}`;
+}
+
 /** Up to two uppercase initials from a name ("Elena & Andrei" → "EA"). */
 export function initials(name: string): string {
   return (name || "")
