@@ -40,6 +40,10 @@ export default function Gallery() {
                 <img
                   src={src}
                   alt={`${t.gallery.title} ${pos + 1}`}
+                  // Defer off-screen portfolio images so mobile (3G) doesn't
+                  // fetch the whole grid up front (QA-1 MOB-2).
+                  loading="lazy"
+                  decoding="async"
                   className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 <div

@@ -141,7 +141,15 @@ export default function ChatWidget() {
   } as const;
 
   return (
-    <div className="fixed bottom-[clamp(16px,3vw,30px)] right-[clamp(16px,3vw,30px)] z-[60] flex flex-col items-end gap-[14px]">
+    <div
+      className="fixed z-[60] flex flex-col items-end gap-[14px]"
+      // Offset by the iOS safe area so the FAB (and the open panel) clear the
+      // home indicator / rounded corners on notched devices (QA-1 MOB-1).
+      style={{
+        bottom: "calc(clamp(16px,3vw,30px) + env(safe-area-inset-bottom))",
+        right: "calc(clamp(16px,3vw,30px) + env(safe-area-inset-right))",
+      }}
+    >
       {chatOpen ? (
         <div
           className="flex flex-col overflow-hidden rounded-[16px]"

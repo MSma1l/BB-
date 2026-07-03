@@ -92,6 +92,17 @@ button,
 textarea {
   font-family: inherit;
 }
+/* Snappier taps on touch devices: drop the legacy ~300ms click delay and the
+   grey tap-flash on our custom-styled controls (QA-1 mobile notes 4.3 / 7.7). */
+a,
+button,
+[role="button"],
+input,
+textarea,
+select {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
 
 /* Shared helper: the gold gradient text used on hero/headings */
 .bb-gold-text {

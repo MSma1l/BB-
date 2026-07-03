@@ -89,8 +89,12 @@ export default function BackgroundMusic() {
         type="button"
         onClick={toggle}
         aria-label={playing ? "Mute music" : "Play music"}
-        className="fixed bottom-[26px] left-[26px] z-[60] flex h-[46px] w-[46px] cursor-pointer items-center justify-center rounded-full border-none text-gold-200"
+        className="fixed z-[60] flex h-[46px] w-[46px] cursor-pointer items-center justify-center rounded-full border-none text-gold-200"
         style={{
+          // Offset by the iOS safe area so the button clears the home indicator
+          // / rounded corners on notched devices (QA-1 MOB-1).
+          bottom: "calc(26px + env(safe-area-inset-bottom))",
+          left: "calc(26px + env(safe-area-inset-left))",
           background: "linear-gradient(160deg,#1c0e08,#120a07)",
           border: "1px solid rgba(231,178,76,.32)",
           boxShadow: "0 10px 26px rgba(0,0,0,.5)",
