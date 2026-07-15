@@ -154,7 +154,16 @@ export async function notifyVisitorMessage(notice: VisitorNotice): Promise<void>
   };
   if (destination.topicId !== null) params.message_thread_id = destination.topicId;
 
-  const sent = await callTelegram<{ message_id: number }>("sendMessage", params);
+  let sent = await callTelegram<{ message_id: number }>("sendMessage", params);
+  // Self-heal: if the saved topic is gone (deleted/recreated → "thread not
+  // found"), the first send fails. Retry in the group's main feed and, if that
+  // works (so the chat itself is reachable — a genuine topic problem, not a
+  // transient outage), persist the downgrade so we stop targeting the dead topic.
+  if (!sent && params.message_thread_id !== undefined) {
+    delete params.message_thread_id;
+    sent = await callTelegram<{ message_id: number }>("sendMessage", params);
+    if (sent) await saveDestination({ chatId: destination.chatId, topicId: null });
+  }
   if (!sent) return;
 
   // Remember the mapping so a Telegram reply reaches this conversation.
@@ -205,9 +214,13 @@ const INTRO =
 /** Handle `/register` — bind to this chat and create a dedicated topic. */
 async function handleRegister(msg: TgMessage): Promise<void> {
   const chatId = String(msg.chat.id);
-  let topicId: number | null = msg.message_thread_id ?? null;
+  // Prefer a dedicated topic we create; otherwise post in the group's main feed.
+  // We do NOT fall back to the thread /register happened to be sent in — that
+  // thread can be a non-postable/ephemeral one and would break sends later.
+  let topicId: number | null = null;
 
-  // If the group is a forum (topics on), make our own dedicated topic.
+  // If the group is a forum (topics on) and the bot may manage topics, make our
+  // own dedicated topic. If it fails (no rights), topicId stays null → main feed.
   if (msg.chat.is_forum) {
     const topic = await callTelegram<{ message_thread_id: number }>("createForumTopic", {
       chat_id: chatId,
