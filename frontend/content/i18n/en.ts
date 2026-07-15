@@ -239,4 +239,39 @@ export const en: Dictionary = {
   errors: {
     network: "Couldn't reach the server. Please check your connection and try again.",
   },
+  consent: {
+    message:
+      "We use cookies and local storage only to remember your preferences and keep the chat working. No ads, no third-party tracking.",
+    accept: "Accept",
+    decline: "Decline",
+    learnMore: "Privacy policy",
+    policyTitle: "Privacy & Cookie Policy",
+    close: "Close",
+    policy: [
+      {
+        heading: "Who we are",
+        body: "Balloons Breeze is an event-décor studio based in Chișinău, Moldova. For any privacy question you can reach us at balloonsbreeze@gmail.com.",
+      },
+      {
+        heading: "What we collect",
+        body: "We only collect the details you send us yourself through the chat widget: your name, phone number and the text of your message. We don't run advertising or third-party tracking, and we don't build profiles about you.",
+      },
+      {
+        heading: "How we use it",
+        body: "Your contact details and message are used solely to reply to your enquiry and prepare an offer for your event. We never sell your data or share it with advertisers.",
+      },
+      {
+        heading: "Cookies & local storage",
+        body: "This site does not use advertising cookies. We store just two small items in your browser's local storage: your consent choice (so we don't ask again) and a conversation identifier that keeps your chat linked to you on future visits. You can clear them at any time in your browser settings.",
+      },
+      {
+        heading: "Data retention",
+        body: "We keep chat conversations only as long as needed to handle your request and our ongoing communication, after which they are deleted.",
+      },
+      {
+        heading: "Your rights",
+        body: "You can ask us to access, correct or delete the personal data you've shared at any time — just email balloonsbreeze@gmail.com.",
+      },
+    ],
+  },
 };

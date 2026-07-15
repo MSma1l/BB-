@@ -7,6 +7,7 @@ import { chatMessageLimiter, publicWriteLimiter } from "../middleware/rateLimit"
 import { broadcast, sseHandler } from "../sse";
 import { stripTags } from "../sanitize";
 import { asyncHandler } from "../asyncHandler";
+import { notifyVisitorMessage } from "../telegram";
 import { MAX_MESSAGE_LEN, MAX_NAME_LEN, MAX_PHONE_LEN } from "../constants";
 
 export const conversationsRouter = Router();
@@ -119,6 +120,18 @@ conversationsRouter.post("/", publicWriteLimiter, asyncHandler(async (req, res) 
     include: { messages: { orderBy: { ts: "asc" } } },
   });
   broadcast("conversations");
+  // Ping the owner's Telegram with the visitor's first message (fire-and-forget:
+  // a Telegram outage must not affect the site response).
+  const firstMsg = conv.messages.find((m) => m.from === "visitor");
+  if (firstMsg) {
+    void notifyVisitorMessage({
+      conversationId: conv.id,
+      first: conv.first,
+      last: conv.last,
+      phone: conv.phone,
+      text: firstMsg.text,
+    });
+  }
   res.status(201).json(serializeConversation(conv));
 }));
 
@@ -154,5 +167,16 @@ conversationsRouter.post("/:id/messages", optionalAdmin, chatMessageLimiter, asy
     }),
   ]);
   broadcast("conversations");
+  // Only visitor messages ping Telegram (operator replies already originate from
+  // the admin/Telegram side). Fire-and-forget.
+  if (from === "visitor") {
+    void notifyVisitorMessage({
+      conversationId: convId,
+      first: exists.first,
+      last: exists.last,
+      phone: exists.phone,
+      text,
+    });
+  }
   res.status(201).json(serializeMessage(message));
 }));

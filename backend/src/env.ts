@@ -44,4 +44,10 @@ export const env = {
   // Hard ceiling for the STORED image after compression (WebP). Kept well below
   // this in practice; guarantees no stored image exceeds it.
   imageMaxMb: Number(process.env.IMAGE_MAX_MB ?? 5),
+  // Telegram bot: notifies the owner's group on new visitor messages. Empty =
+  // feature disabled (dev/tests run without it). See src/telegram.ts.
+  telegramBotToken: process.env.TELEGRAM_BOT_TOKEN ?? "",
+  // Public origin of the site, used to build the admin-panel link in Telegram
+  // notifications (no trailing slash).
+  publicSiteUrl: (process.env.PUBLIC_SITE_URL ?? "https://balloonsbreeze.md").replace(/\/+$/, ""),
 } as const;

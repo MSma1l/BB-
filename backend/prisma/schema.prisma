@@ -68,3 +68,23 @@ model Review {
   ts       BigInt
   approved Boolean @default(true)
 }
+
+// Generic key/value store for runtime config that isn't known at deploy time.
+// Currently holds the Telegram bot's registered chat id + topic (see telegram.ts).
+model Setting {
+  key   String @id
+  value String
+}
+
+// Maps a Telegram notification message → the site conversation it announced, so
+// an owner replying to that message in Telegram is routed back to the right
+// visitor thread on the site (telegram.ts handleReply).
+model TelegramNotice {
+  chatId         String
+  messageId      Int
+  conversationId String
+  createdAt      DateTime @default(now())
+
+  @@id([chatId, messageId])
+  @@index([conversationId])
+}

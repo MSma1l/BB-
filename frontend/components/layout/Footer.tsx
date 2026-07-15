@@ -4,11 +4,13 @@ import Image from "next/image";
 import { Phone, MessageCircle, Mail, MapPin } from "lucide-react";
 import { useT } from "@/lib/i18n";
 import { useUI } from "@/lib/ui";
+import { useConsent } from "@/lib/consent";
 
 export default function Footer() {
   const t = useT();
   const f = t.footer;
   const { openChat } = useUI();
+  const { openPolicy } = useConsent();
   // Derive the dial link from the (editable) displayed phone number.
   const telHref = `tel:${f.phone.replace(/[^+\d]/g, "")}`;
 
@@ -81,10 +83,20 @@ export default function Footer() {
           </span>
         </div>
 
-        <div className="mt-6 flex items-center justify-center gap-[18px] text-[12px] text-dim">
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-[14px] gap-y-2 text-[12px] text-dim">
           <span>
             © 2026 {f.brandLine}. {f.rights}.
           </span>
+          <span aria-hidden className="opacity-50">
+            ·
+          </span>
+          <button
+            type="button"
+            onClick={openPolicy}
+            className="cursor-pointer bg-transparent p-0 text-dim underline underline-offset-2 hover:text-sand"
+          >
+            {t.consent.learnMore}
+          </button>
         </div>
       </div>
     </footer>

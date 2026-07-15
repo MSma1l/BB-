@@ -249,4 +249,39 @@ export const ro: Dictionary = {
   errors: {
     network: "Nu s-a putut contacta serverul. Verifică conexiunea și încearcă din nou.",
   },
+  consent: {
+    message:
+      "Folosim cookie-uri și stocarea locală doar pentru a reține preferințele tale și a menține chatul funcțional. Fără reclame, fără urmărire de la terți.",
+    accept: "Accept",
+    decline: "Refuz",
+    learnMore: "Confidențialitate",
+    policyTitle: "Politica de confidențialitate și cookie-uri",
+    close: "Închide",
+    policy: [
+      {
+        heading: "Cine suntem",
+        body: "Balloons Breeze este un studio de decor pentru evenimente din Chișinău, Moldova. Pentru orice întrebare legată de confidențialitate ne poți scrie la balloonsbreeze@gmail.com.",
+      },
+      {
+        heading: "Ce date colectăm",
+        body: "Colectăm doar datele pe care ni le trimiți tu prin widgetul de chat: numele, numărul de telefon și textul mesajului tău. Nu folosim reclame sau urmărire de la terți și nu construim profiluri despre tine.",
+      },
+      {
+        heading: "Cum le folosim",
+        body: "Datele tale de contact și mesajul sunt folosite exclusiv pentru a răspunde solicitării tale și a pregăti o ofertă pentru evenimentul tău. Nu vindem niciodată datele tale și nu le partajăm cu agenți de publicitate.",
+      },
+      {
+        heading: "Cookie-uri și stocare locală",
+        body: "Acest site nu folosește cookie-uri de publicitate. În stocarea locală a browserului păstrăm doar două valori mici: opțiunea ta privind consimțământul (ca să nu te mai întrebăm) și un identificator de conversație care îți leagă chatul de tine la vizitele viitoare. Le poți șterge oricând din setările browserului.",
+      },
+      {
+        heading: "Păstrarea datelor",
+        body: "Păstrăm conversațiile din chat doar atât timp cât este necesar pentru a-ți gestiona solicitarea și comunicarea noastră, după care sunt șterse.",
+      },
+      {
+        heading: "Drepturile tale",
+        body: "Poți solicita oricând accesul, corectarea sau ștergerea datelor personale pe care le-ai partajat — trimite-ne un e-mail la balloonsbreeze@gmail.com.",
+      },
+    ],
+  },
 };

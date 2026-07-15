@@ -42,6 +42,26 @@ company. It is now a **full-stack app**:
   moderation). Backend + frontend unit tests green (`vitest`).
 - ✅ Dockerized (root `docker-compose.yml`; prod/server variants + nginx configs).
 - ✅ **QA hardening pass (5 reports + polish) applied** — see below.
+- ✅ **Telegram notifier + GDPR consent added** — see "Telegram + consent" below.
+
+### Telegram + consent (feature branch → `main`)
+- **Telegram bot** (`backend/src/telegram.ts`, bot **@Balloonsbreeze_bot**) — when a
+  visitor writes in the site chat, the owner gets an instant Telegram notification
+  (name, phone, message + a link to `/admin-bb`). Setup is zero-config: add the bot
+  to a group (Topics enabled) **as admin with "Manage topics"**, then send
+  `/register` — it grabs the chat id, auto-creates a dedicated topic ("🔔 Mesaje
+  site"), introduces itself, and persists the destination in the DB (`Setting`
+  rows). **Two-way:** the owner can *reply* to a notification in Telegram and it's
+  posted back into the visitor's thread on the site (mapping in `TelegramNotice`).
+  Token lives in `.env` as `TELEGRAM_BOT_TOKEN` (empty ⇒ feature disabled; dev/tests
+  run without it). Notifications are fire-and-forget — a Telegram outage never
+  affects the site's chat. Polling-based (`getUpdates`), no public webhook needed.
+- **Cookie/privacy consent** (`frontend/lib/consent.tsx`,
+  `components/ui/ConsentBanner.tsx`, `components/ui/PolicyModal.tsx`) — first-visit
+  accept/decline banner (choice in localStorage `bb_consent`) + a trilingual
+  privacy & cookie policy modal, opened from the banner and the footer. Copy is
+  accurate to what the site actually does (chat intake + localStorage; no ad
+  trackers). i18n under the `consent` key in `content/i18n/{ru,ro,en}.ts`.
 
 ### QA hardening applied (branches all merged to `main`)
 | Area | What changed |

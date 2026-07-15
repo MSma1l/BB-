@@ -256,4 +256,21 @@ export interface Dictionary {
     /** A write (chat message / review) couldn't reach the server. */
     network: string;
   };
+  /** GDPR-style cookie/privacy consent banner + policy modal. */
+  consent: {
+    /** Short banner message shown on first visit. */
+    message: string;
+    /** "Accept" button label. */
+    accept: string;
+    /** "Decline" button label. */
+    decline: string;
+    /** Policy link label (banner + footer). */
+    learnMore: string;
+    /** Policy modal heading. */
+    policyTitle: string;
+    /** Accessible label for the modal close button. */
+    close: string;
+    /** Policy body, as titled sections. */
+    policy: { heading: string; body: string }[];
+  };
 }
