@@ -188,9 +188,15 @@ interface TgChat {
   title?: string;
   is_forum?: boolean;
 }
+interface TgUser {
+  id: number;
+  username?: string;
+  first_name?: string;
+}
 interface TgMessage {
   message_id: number;
   chat: TgChat;
+  from?: TgUser;
   text?: string;
   message_thread_id?: number;
   reply_to_message?: { message_id: number };
@@ -279,6 +285,12 @@ async function handleReply(msg: TgMessage): Promise<void> {
   await callTelegram("sendMessage", ack);
 }
 
+/** Whether this message's sender is an authorized bot admin (by @username). */
+function isAdminSender(msg: TgMessage): boolean {
+  const uname = msg.from?.username?.toLowerCase();
+  return uname !== undefined && env.telegramAdminUsernames.includes(uname);
+}
+
 async function handleUpdate(update: TgUpdate): Promise<void> {
   const msg = update.message;
   if (!msg) return;
@@ -286,6 +298,25 @@ async function handleUpdate(update: TgUpdate): Promise<void> {
   const text = (msg.text ?? "").trim();
   // Commands may be suffixed with @botname in groups; strip that.
   const cmd = text.split(/\s|@/)[0].toLowerCase();
+  const isCommand = cmd.startsWith("/");
+
+  // Only the site owner (@username in TELEGRAM_ADMIN_USERNAMES) may drive the bot
+  // — run commands or have a reply forwarded to a visitor. Everyone else is
+  // ignored, so a random group member can't reconfigure it or inject replies.
+  if (isCommand || msg.reply_to_message) {
+    if (!isAdminSender(msg)) {
+      if (isCommand) {
+        const admins = env.telegramAdminUsernames.map((u) => "@" + u).join(", ");
+        const where: Record<string, unknown> = {
+          chat_id: msg.chat.id,
+          text: `⛔ Doar administratorul (${admins}) poate folosi comenzile botului.`,
+        };
+        if (msg.message_thread_id !== undefined) where.message_thread_id = msg.message_thread_id;
+        await callTelegram("sendMessage", where);
+      }
+      return; // unauthorized reply → silently ignore
+    }
+  }
 
   if (cmd === "/register") return void (await handleRegister(msg));
   if (cmd === "/start" || cmd === "/help") {

@@ -47,6 +47,13 @@ export const env = {
   // Telegram bot: notifies the owner's group on new visitor messages. Empty =
   // feature disabled (dev/tests run without it). See src/telegram.ts.
   telegramBotToken: process.env.TELEGRAM_BOT_TOKEN ?? "",
+  // Only these Telegram usernames (comma-separated, no @) may run bot commands
+  // (/register, /help) and have their replies routed back to visitors. Defaults
+  // to the site owner. Compared case-insensitively.
+  telegramAdminUsernames: (process.env.TELEGRAM_ADMIN_USERNAMES ?? "MSma1l")
+    .split(",")
+    .map((u) => u.trim().replace(/^@/, "").toLowerCase())
+    .filter(Boolean),
   // Public origin of the site, used to build the admin-panel link in Telegram
   // notifications (no trailing slash).
   publicSiteUrl: (process.env.PUBLIC_SITE_URL ?? "https://balloonsbreeze.md").replace(/\/+$/, ""),
